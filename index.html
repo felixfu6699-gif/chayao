@@ -71,12 +71,25 @@
         }
 
         .section-label {
-            font-size: 11px;
+            font-size: 15px;
             font-weight: 400;
-            color: #999;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
+            color: #2c2c2c;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-label .capsule {
+            display: inline-block;
+            width: 18px;
+            height: 9px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #c0564b 50%, #f5e6d0 50%);
+            border: 1px solid #e0dedc;
+            position: relative;
+            top: 0px;
         }
 
         .input-row {
@@ -611,13 +624,13 @@
 </head>
 <body>
     <div class="header">
-        <h1>药品相互作用查询</h1>
-        <p><span class="pill-icon"></span>查询药品能否同时服用及安全间隔</p>
+        <h1>这些药能不能一起吃？</h1>
+        <p><span class="pill-icon"></span>输入药品名称或拍照，查询是否能同时服用</p>
     </div>
 
     <div class="container">
         <div class="input-section">
-            <div class="section-label">输入药品</div>
+            <div class="section-label">输入药品 <span class="capsule"></span></div>
             <div class="input-row">
                 <input type="text" class="drug-input" id="drugInput" placeholder="药品名称，如布洛芬" />
                 <button class="btn-add" onclick="addDrug()">添加</button>
@@ -643,14 +656,14 @@
         </div>
 
         <div class="drug-list-section">
-            <div class="section-label">已添加药品</div>
+            <div class="section-label">已添加药品 <span class="capsule"></span></div>
             <div class="drug-tags" id="drugTags">
                 <div class="empty-hint">请添加至少两种药品</div>
             </div>
         </div>
 
         <button class="btn-check" id="btnCheck" onclick="checkInteractions()" disabled>
-            查询相互作用
+            查一查能不能一起吃
         </button>
 
         <div class="result-section" id="resultSection">
