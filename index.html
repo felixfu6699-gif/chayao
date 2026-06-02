@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>药品相互作用查询</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .header {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 16px 24px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .header h1 {
+            font-size: 19px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.85;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-title .icon {
+            font-size: 18px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .drug-input {
+            flex: 1;
+            height: 44px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 0 14px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .drug-input:focus {
+            border-color: #667eea;
+        }
+
+        .btn-add {
+            height: 44px;
+            padding: 0 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-add:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
+
+        .camera-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-camera, .btn-gallery {
+            flex: 1;
+            height: 44px;
+            border: 1.5px dashed #d1d5db;
+            border-radius: 12px;
+            background: #fafbfc;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-camera:active, .btn-gallery:active {
+            background: #f0f0f5;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .drug-list-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .drug-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 40px;
+        }
+
+        .drug-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #f0f3ff 0%, #f8f0ff 100%);
+            border: 1px solid #e0e4ff;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #4c5680;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .drug-tag .remove {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #d1d5db;
+            color: white;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .drug-tag .remove:active {
+            background: #ef4444;
+        }
+
+        .empty-hint {
+            color: #9ca3af;
+            font-size: 14px;
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        .btn-check {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 16px;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-check:active {
+            transform: scale(0.97);
+        }
+
+        .btn-check:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-item.danger {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .result-item.warning {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+        }
+
+        .result-item.safe {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .result-item.info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .result-level {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .result-item.danger .result-level { color: #dc2626; }
+        .result-item.warning .result-level { color: #d97706; }
+        .result-item.safe .result-level { color: #16a34a; }
+        .result-item.info .result-level { color: #2563eb; }
+
+        .result-drugs {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .result-desc {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .result-advice {
+            margin-top: 8px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .result-advice strong {
+            color: #667eea;
+        }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+            padding: 20px 16px;
+            line-height: 1.6;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-box {
+            background: white;
+            border-radius: 16px;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .ocr-preview {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .ocr-preview.show {
+            display: block;
+        }
+
+        .ocr-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .ocr-result-text {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .ocr-drugs-found {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .ocr-drug-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .ocr-drug-btn:active {
+            opacity: 0.8;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .summary-card h3 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            opacity: 0.95;
+        }
+
+        .summary-card p {
+            font-size: 14px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .timeline {
+            margin-top: 12px;
+            padding-left: 16px;
+            border-left: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 8px 0 8px 16px;
+            font-size: 14px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -21px;
+            top: 14px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💊 药品相互作用查询</h1>
+        <p>查询药品是否能一起吃，了解安全服用间隔</p>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <div class="section-title">
+                <span class="icon">✏️</span> 输入药品名称
+            </div>
+            <div class="input-row">
+                <input type="text" class="drug-input" id="drugInput" placeholder="输入药品名称，如：布洛芬" />
+                <button class="btn-add" onclick="addDrug()">添加</button>
+            </div>
+            <div class="camera-section">
+                <button class="btn-camera" onclick="takePhoto()">
+                    📷 拍照识别
+                </button>
+                <button class="btn-gallery" onclick="pickFromGallery()">
+                    🖼️ 相册选取
+                </button>
+            </div>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)" />
+            <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImage(event)" />
+            
+            <div class="ocr-preview" id="ocrPreview">
+                <img id="ocrImage" src="" alt="拍照预览" />
+                <div class="ocr-result-text" id="ocrText">正在识别中...</div>
+                <div class="ocr-drugs-found" id="ocrDrugs"></div>
+            </div>
+        </div>
+
+        <div class="drug-list-section">
+            <div class="section-title">
+                <span class="icon">📋</span> 已添加药品
+            </div>
+            <div class="drug-tags" id="drugTags">
+                <div class="empty-hint">请添加至少2种药品进行查询</div>
+            </div>
+        </div>
+
+        <button class="btn-check" id="btnCheck" onclick="checkInteractions()" disabled>
+            🔍 查询药品相互作用
+        </button>
+
+        <div class="result-section" id="resultSection">
+        </div>
+
+        <div class="disclaimer">
+            ⚠️ 本工具仅供参考，不能替代医生或药师的专业建议。<br>
+            服用多种药品前请咨询医师或药师。
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading">
+        <div class="loading-box">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">正在分析中...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    
+    <script>
+        // ==================== 药品相互作用数据库 ====================
+        const drugDatabase = {
+            aliases: {
+                '布洛芬': ['芬必得', '美林', '布洛芬缓释胶囊'],
+                '对乙酰氨基酚': ['扑热息痛', '泰诺', '必理通', '日夜百服宁', '散利痛'],
+                '阿司匹林': ['拜阿司匹灵', '阿司匹林肠溶片', '巴米尔'],
+                '头孢克洛': ['希刻劳', '头孢克洛缓释胶囊'],
+                '头孢氨苄': ['先锋IV号', '希法先'],
+                '阿莫西林': ['阿莫仙', '再林', '弗莱莫星'],
+                '甲硝唑': ['灭滴灵', '甲硝唑片'],
+                '氯雷他定': ['开瑞坦', '氯雷他定片'],
+                '西替利嗪': ['仙特明', '西可韦'],
+                '奥美拉唑': ['洛赛克', '奥美拉唑肠溶胶囊'],
+                '雷贝拉唑': ['波利特', '瑞波特'],
+                '蒙脱石散': ['思密达', '必奇'],
+                '藿香正气水': ['藿香正气液', '藿香正气口服液'],
+                '连花清瘟': ['连花清瘟胶囊', '连花清瘟颗粒'],
+                '感冒灵': ['感冒灵颗粒', '999感冒灵'],
+                '板蓝根': ['板蓝根颗粒'],
+                '双黄连': ['双黄连口服液'],
+                '维生素C': ['维C', 'VC'],
+                '碳酸钙': ['钙尔奇', '迪巧'],
+                '硫酸亚铁': ['福乃得', '力蜚能'],
+                '华法林': ['华法林钠片'],
+                '氯吡格雷': ['波立维', '泰嘉'],
+                '二甲双胍': ['格华止', '美迪康'],
+                '阿卡波糖': ['拜唐苹'],
+                '辛伐他汀': ['舒降之', '京必舒新'],
+                '阿托伐他汀': ['立普妥', '阿乐'],
+                '氨氯地平': ['络活喜', '压氏达'],
+                '硝苯地平': ['心痛定', '拜新同'],
+                '美托洛尔': ['倍他乐克', '美托洛尔缓释片'],
+                '地高辛': ['狄戈辛'],
+                '速效救心丸': [],
+                '复方丹参滴丸': ['丹参滴丸'],
+                '银杏叶片': ['金纳多', '银杏叶提取物'],
+                '左氧氟沙星': ['可乐必妥', '利复星'],
+                '诺氟沙星': ['氟哌酸'],
+                '罗红霉素': ['罗力得', '严迪'],
+                '阿奇霉素': ['希舒美', '泰力特'],
+                '克拉霉素': ['克拉仙', '诺邦'],
+                '多潘立酮': ['吗丁啉'],
+                '莫沙必利': ['加斯清', '新络纳'],
+                '右美沙芬': ['氢溴酸右美沙芬片'],
+                '氨溴索': ['沐舒坦', '兰苏'],
+                '孟鲁司特': ['顺尔宁'],
+                '沙丁胺醇': ['万托林'],
+                '地塞米松': ['氟美松'],
+                '泼尼松': ['强的松'],
+                '褪黑素': ['脑白金', '褪黑素片'],
+                '地西泮': ['安定', '安定片'],
+                '艾司唑仑': ['舒乐安定'],
+                '氟西汀': ['百忧解', '优克'],
+                '舍曲林': ['左洛复'],
+            },
+
+            interactions: [
+                {
+                    drugs: ['布洛芬', '阿司匹林'],
+                    level: 'danger',
+                    description: '两者都是非甾体抗炎药(NSAIDs)，同时服用会显著增加胃肠道出血和溃疡的风险。布洛芬还可能降低阿司匹林的心脏保护作用。',
+                    advice: '避免同时服用。如需同时使用，布洛芬应在服用阿司匹林前8小时或后30分钟服用。',
+                    interval: '至少间隔8小时'
+                },
+                {
+                    drugs: ['布洛芬', '对乙酰氨基酚'],
+                    level: 'warning',
+                    description: '两者都是解热镇痛药，联合使用时肝肾负担增加。短期交替使用相对安全，但不建议同时长期服用。',
+                    advice: '可以交替服用来退烧。建议间隔4-6小时交替使用，单次不要同时吃。注意每日总剂量不要超标。',
+                    interval: '交替服用间隔4-6小时'
+                },
+                {
+                    drugs: ['阿司匹林', '华法林'],
+                    level: 'danger',
+                    description: '两者都有抗凝血作用，联合使用大幅增加出血风险，可能导致严重的内出血。',
+                    advice: '禁止自行联合使用，必须在医生严格监控下才能联用。如有异常出血应立即就医。',
+                    interval: '禁止联用'
+                },
+                {
+                    drugs: ['头孢克洛', '藿香正气水'],
+                    level: 'danger',
+                    description: '头孢类抗生素与含酒精的藿香正气水同服会产生"双硫仑样反应"，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。',
+                    advice: '禁止同时使用！服用头孢类抗生素期间及停药后7天内，不得饮酒或服用含酒精的药物。可用不含酒精的藿香正气口服液替代。',
+                    interval: '头孢停药后至少7天才能服用含酒精制剂'
+                },
+                {
+                    drugs: ['头孢氨苄', '藿香正气水'],
+                    level: 'danger',
+                    description: '头孢类抗生素与含酒精的藿香正气水同服会产生"双硫仑样反应"，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。',
+                    advice: '禁止同时使用！服用头孢类抗生素期间及停药后7天内，不得饮酒或服用含酒精的药物。',
+                    interval: '头孢停药后至少7天才能服用含酒精制剂'
+                },
+                {
+                    drugs: ['甲硝唑', '藿香正气水'],
+                    level: 'danger',
+                    description: '甲硝唑与酒精同服会产生双硫仑样反应，症状包括恶心、呕吐、心动过速、低血压等。',
+                    advice: '禁止同时使用！服用甲硝唑期间及停药后3天内禁酒。',
+                    interval: '停药后至少3天'
+                },
+                {
+                    drugs: ['阿莫西林', '甲硝唑'],
+                    level: 'safe',
+                    description: '两者可以联合使用，临床上常见联用于幽门螺杆菌(Hp)感染的根除治疗。',
+                    advice: '可以同时服用，遵医嘱用量即可。',
+                    interval: '可同时服用'
+                },
+                {
+                    drugs: ['奥美拉唑', '氯吡格雷'],
+                    level: 'danger',
+                    description: '奥美拉唑会抑制CYP2C19酶，降低氯吡格雷的抗血小板效果，增加心血管事件风险。',
+                    advice: '应避免联用。如需护胃，可选用泮托拉唑或雷贝拉唑替代奥美拉唑。',
+                    interval: '建议更换药物，不建议联用'
+                },
+                {
+                    drugs: ['碳酸钙', '左氧氟沙星'],
+                    level: 'warning',
+                    description: '钙剂会与喹诺酮类抗生素络合，降低抗生素的吸收和疗效。',
+                    advice: '两药需间隔至少2小时服用。先服抗生素，2小时后再服钙片。',
+                    interval: '间隔至少2小时'
+                },
+                {
+                    drugs: ['碳酸钙', '诺氟沙星'],
+                    level: 'warning',
+                    description: '钙剂会与喹诺酮类抗生素络合，降低抗生素的吸收和疗效。',
+                    advice: '两药需间隔至少2小时服用。先服抗生素，2小时后再服钙片。',
+                    interval: '间隔至少2小时'
+                },
+                {
+                    drugs: ['硫酸亚铁', '碳酸钙'],
+                    level: 'warning',
+                    description: '钙和铁会相互竞争吸收，同服会降低两者的吸收率。',
+                    advice: '应间隔2小时以上服用。建议铁剂早餐前服用，钙剂晚餐后或睡前服用。',
+                    interval: '间隔至少2小时'
+                },
+                {
+                    drugs: ['辛伐他汀', '克拉霉素'],
+                    level: 'danger',
+                    description: '克拉霉素是CYP3A4强抑制剂，会使辛伐他汀血药浓度大幅升高，增加横纹肌溶解风险。',
+                    advice: '禁止联用！如需使用大环内酯类抗生素，应暂停他汀或换用阿奇霉素。',
+                    interval: '禁止联用'
+                },
+                {
+                    drugs: ['阿托伐他汀', '克拉霉素'],
+                    level: 'danger',
+                    description: '克拉霉素是CYP3A4强抑制剂，会使阿托伐他汀血药浓度升高，增加肌病风险。',
+                    advice: '联用期间阿托伐他汀日剂量不应超过20mg，密切监测肌肉症状。建议咨询医生调整方案。',
+                    interval: '需医生评估后减量联用'
+                },
+                {
+                    drugs: ['地高辛', '阿莫西林'],
+                    level: 'warning',
+                    description: '部分抗生素可改变肠道菌群，减少地高辛的代谢，导致地高辛血药浓度升高。',
+                    advice: '联用时应注意监测地高辛血药浓度，注意有无恶心、心律不齐等中毒症状。',
+                    interval: '可联用但需监测'
+                },
+                {
+                    drugs: ['二甲双胍', '碳酸钙'],
+                    level: 'safe',
+                    description: '两者没有明显的药物相互作用，可以一起服用。',
+                    advice: '可以同时服用，不影响各自疗效。',
+                    interval: '可同时服用'
+                },
+                {
+                    drugs: ['氨氯地平', '辛伐他汀'],
+                    level: 'warning',
+                    description: '氨氯地平会轻度抑制CYP3A4，使辛伐他汀血药浓度升高，增加肌病风险。',
+                    advice: '联用时辛伐他汀每日剂量不应超过20mg。或者换用受影响较小的瑞舒伐他汀。',
+                    interval: '可联用但需限制剂量'
+                },
+                {
+                    drugs: ['连花清瘟', '感冒灵'],
+                    level: 'warning',
+                    description: '两者功效相近，均用于感冒治疗，叠加使用无必要且可能增加不良反应。部分复方感冒药含相同成分，存在重复用药风险。',
+                    advice: '不要同时服用功效相近的复方感冒药。选择一种即可，避免重复用药。',
+                    interval: '选一种服用，不要同时吃'
+                },
+                {
+                    drugs: ['连花清瘟', '对乙酰氨基酚'],
+                    level: 'warning',
+                    description: '连花清瘟中不含对乙酰氨基酚，但两者可能有部分退热作用重叠。',
+                    advice: '可以联用，但需注意观察退热效果，避免过度降温。建议间隔1-2小时。',
+                    interval: '建议间隔1-2小时'
+                },
+                {
+                    drugs: ['感冒灵', '对乙酰氨基酚'],
+                    level: 'danger',
+                    description: '999感冒灵中已含有对乙酰氨基酚，再额外服用会导致对乙酰氨基酚过量，可能引发严重肝损害。',
+                    advice: '禁止同时服用！999感冒灵本身就含对乙酰氨基酚，不能再加服泰诺等同类药。',
+                    interval: '禁止联用（成分重复）'
+                },
+                {
+                    drugs: ['感冒灵', '布洛芬'],
+                    level: 'warning',
+                    description: '感冒灵含有对乙酰氨基酚等解热镇痛成分，与布洛芬作用相似，联用增加胃肠道不良反应。',
+                    advice: '不建议联用。如需更强的退热效果，可在感冒灵服后4-6小时使用布洛芬。',
+                    interval: '间隔4-6小时'
+                },
+                {
+                    drugs: ['蒙脱石散', '阿莫西林'],
+                    level: 'warning',
+                    description: '蒙脱石散有强吸附作用，会吸附同时服用的其他药物，降低其疗效。',
+                    advice: '蒙脱石散应与其他药物间隔至少1-2小时服用。先服其他药物，再服蒙脱石散。',
+                    interval: '间隔至少1-2小时'
+                },
+                {
+                    drugs: ['蒙脱石散', '诺氟沙星'],
+                    level: 'warning',
+                    description: '蒙脱石散会吸附诺氟沙星，显著降低其抗菌效果。',
+                    advice: '两药必须间隔至少2小时。建议先服诺氟沙星，2小时后再用蒙脱石散。',
+                    interval: '间隔至少2小时'
+                },
+                {
+                    drugs: ['多潘立酮', '奥美拉唑'],
+                    level: 'safe',
+                    description: '两者联用常见于胃病治疗，多潘立酮促进胃动力，奥美拉唑抑制胃酸，相互不冲突。',
+                    advice: '可以联用。建议奥美拉唑早餐前30分钟空腹服用，多潘立酮餐前15-30分钟服用。',
+                    interval: '可同时期服用'
+                },
+                {
+                    drugs: ['氯雷他定', '对乙酰氨基酚'],
+                    level: 'safe',
+                    description: '两者没有明显相互作用，可以安全联用。抗过敏的同时如需退热镇痛是可以的。',
+                    advice: '可以同时服用，各自按说明书剂量即可。',
+                    interval: '可同时服用'
+                },
+                {
+                    drugs: ['氯雷他定', '西替利嗪'],
+                    level: 'warning',
+                    description: '两者都是抗组胺药，作用机制相似，同服会增加嗜睡等副作用，且疗效不会叠加。',
+                    advice: '不要同时服用两种抗过敏药，选择一种即可。如一种效果不好，可换另一种，但不要叠加。',
+                    interval: '选一种服用即可'
+                },
+                {
+                    drugs: ['地西泮', '氟西汀'],
+                    level: 'warning',
+                    description: '氟西汀可能增加地西泮的血药浓度，增强镇静作用。',
+                    advice: '联用需医生指导，可能需要减少地西泮剂量。注意过度镇静和呼吸抑制。',
+                    interval: '需医生指导联用'
+                },
+                {
+                    drugs: ['褪黑素', '地西泮'],
+                    level: 'warning',
+                    description: '两者都有镇静催眠作用，联用可能过度抑制中枢神经系统。',
+                    advice: '不建议同时使用，过度镇静可能影响次日精神状态。选择一种助眠方式即可。',
+                    interval: '不建议联用'
+                },
+                {
+                    drugs: ['美托洛尔', '硝苯地平'],
+                    level: 'warning',
+                    description: '两者联用可能过度降压，且美托洛尔+硝苯地平可能增加心动过缓风险。',
+                    advice: '联用是临床常见方案，但需在医生指导下调整剂量。注意监测血压和心率。',
+                    interval: '可联用但需医生指导'
+                },
+                {
+                    drugs: ['速效救心丸', '硝苯地平'],
+                    level: 'warning',
+                    description: '两者均有扩张血管作用，联用可能导致血压过低。',
+                    advice: '急性心绞痛发作时可先含服速效救心丸，待症状缓解后再正常服用降压药。不要同时大量使用。',
+                    interval: '建议间隔使用'
+                },
+                {
+                    drugs: ['复方丹参滴丸', '华法林'],
+                    level: 'warning',
+                    description: '丹参具有活血化瘀作用，可能增强华法林的抗凝效果，增加出血风险。',
+                    advice: '联用时应更频繁监测INR值。如有皮肤淤斑、牙龈出血等应及时就医。',
+                    interval: '可联用但需密切监测凝血功能'
+                },
+                {
+                    drugs: ['布洛芬', '氯吡格雷'],
+                    level: 'danger',
+                    description: 'NSAIDs与氯吡格雷联用会显著增加消化道出血风险。',
+                    advice: '应避免联用。如确需镇痛，可选用对乙酰氨基酚，对血小板影响较小。',
+                    interval: '避免联用'
+                },
+                {
+                    drugs: ['维生素C', '碳酸钙'],
+                    level: 'safe',
+                    description: '维生素C可以促进钙的吸收，两者联用是有益的。',
+                    advice: '可以同时服用，维生素C有助于钙吸收。',
+                    interval: '可同时服用'
+                },
+                {
+                    drugs: ['阿奇霉素', '辛伐他汀'],
+                    level: 'warning',
+                    description: '阿奇霉素对CYP3A4有轻度抑制作用，可能轻微升高他汀血药浓度。',
+                    advice: '短期联用风险较低，但应注意有无肌肉疼痛等不适。疗程较长时建议咨询医生。',
+                    interval: '短期可联用，注意监测'
+                },
+                {
+                    drugs: ['阿卡波糖', '蒙脱石散'],
+                    level: 'warning',
+                    description: '蒙脱石散的吸附作用可能影响阿卡波糖在肠道的作用。',
+                    advice: '建议间隔2小时以上服用。阿卡波糖随第一口饭服用，蒙脱石散两餐之间服用。',
+                    interval: '间隔至少2小时'
+                },
+                {
+                    drugs: ['银杏叶片', '阿司匹林'],
+                    level: 'warning',
+                    description: '银杏叶有抗血小板聚集作用，与阿司匹林联用会增加出血风险。',
+                    advice: '不建议自行联用。如正在服用阿司匹林，使用银杏叶制剂前应咨询医生。',
+                    interval: '不建议联用'
+                },
+                {
+                    drugs: ['银杏叶片', '华法林'],
+                    level: 'danger',
+                    description: '银杏叶可能增强华法林的抗凝效果，显著增加出血风险。',
+                    advice: '禁止自行联用！正在服用华法林的患者使用任何活血类中药前必须咨询医生。',
+                    interval: '禁止联用'
+                },
+                {
+                    drugs: ['泼尼松', '布洛芬'],
+                    level: 'warning',
+                    description: '糖皮质激素与NSAIDs联用会增加消化道溃疡和出血的风险。',
+                    advice: '联用时应加用胃黏膜保护剂。注意有无胃部不适、黑便等症状。',
+                    interval: '尽量避免，必须联用时加护胃药'
+                },
+                {
+                    drugs: ['孟鲁司特', '氯雷他定'],
+                    level: 'safe',
+                    description: '两者作用机制不同（白三烯受体拮抗剂+抗组胺药），可以协同抗过敏。',
+                    advice: '可以安全联用，临床常见联合方案用于过敏性鼻炎和哮喘。',
+                    interval: '可同时服用'
+                },
+                {
+                    drugs: ['氨溴索', '右美沙芬'],
+                    level: 'warning',
+                    description: '氨溴索是化痰药（促进痰液排出），右美沙芬是镇咳药（抑制咳嗽）。联用时镇咳作用可能导致痰液无法排出，加重病情。',
+                    advice: '一般不建议同时使用。有痰时应以化痰为主，干咳无痰时用镇咳药。如必须联用，白天用化痰药，晚上用镇咳药。',
+                    interval: '白天化痰，夜间镇咳'
+                },
+                {
+                    drugs: ['硫酸亚铁', '左氧氟沙星'],
+                    level: 'warning',
+                    description: '铁剂会与喹诺酮类抗生素形成螯合物，降低抗生素吸收率。',
+                    advice: '需间隔至少2小时服用。先服用抗生素，2小时后再服铁剂。',
+                    interval: '间隔至少2小时'
+                },
+                {
+                    drugs: ['奥美拉唑', '碳酸钙'],
+                    level: 'warning',
+                    description: '奥美拉唑抑制胃酸分泌，而碳酸钙需要酸性环境才能更好溶解吸收。长期联用可能影响钙吸收。',
+                    advice: '短期联用影响不大。长期联用时，可考虑换用柠檬酸钙（不依赖胃酸吸收）。两者错开1小时服用更佳。',
+                    interval: '建议间隔1小时'
+                },
+            ]
+        };
+
+        // ==================== 核心逻辑 ====================
+        let drugList = [];
+
+        function normalizeDrugName(name) {
+            name = name.trim();
+            if (drugDatabase.aliases[name] !== undefined) {
+                return name;
+            }
+            for (const [generic, brands] of Object.entries(drugDatabase.aliases)) {
+                if (brands.some(b => name.includes(b) || b.includes(name))) {
+                    return generic;
+                }
+                if (name.includes(generic)) {
+                    return generic;
+                }
+            }
+            return name;
+        }
+
+        function addDrug(name) {
+            const input = document.getElementById('drugInput');
+            const drugName = name || input.value.trim();
+            
+            if (!drugName) return;
+            
+            const normalized = normalizeDrugName(drugName);
+            
+            if (drugList.some(d => d.normalized === normalized)) {
+                showToast('该药品已添加');
+                input.value = '';
+                return;
+            }
+
+            drugList.push({
+                original: drugName,
+                normalized: normalized
+            });
+
+            input.value = '';
+            renderDrugTags();
+            updateCheckButton();
+        }
+
+        function removeDrug(index) {
+            drugList.splice(index, 1);
+            renderDrugTags();
+            updateCheckButton();
+            // 如果药品不够，隐藏结果
+            if (drugList.length < 2) {
+                document.getElementById('resultSection').classList.remove('show');
+            }
+        }
+
+        function renderDrugTags() {
+            const container = document.getElementById('drugTags');
+            if (drugList.length === 0) {
+                container.innerHTML = '<div class="empty-hint">请添加至少2种药品进行查询</div>';
+                return;
+            }
+
+            container.innerHTML = drugList.map((drug, index) => {
+                const showAlias = drug.original !== drug.normalized;
+                return `
+                    <div class="drug-tag">
+                        ${drug.original}${showAlias ? `<span style="font-size:11px;color:#9ca3af">(${drug.normalized})</span>` : ''}
+                        <span class="remove" onclick="removeDrug(${index})">✕</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCheckButton() {
+            const btn = document.getElementById('btnCheck');
+            btn.disabled = drugList.length < 2;
+        }
+
+        function checkInteractions() {
+            if (drugList.length < 2) return;
+
+            showLoading('正在分析药品相互作用...');
+
+            setTimeout(() => {
+                const results = analyzeInteractions();
+                displayResults(results);
+                hideLoading();
+            }, 600);
+        }
+
+        function analyzeInteractions() {
+            const results = [];
+            const normalizedNames = drugList.map(d => d.normalized);
+
+            for (let i = 0; i < normalizedNames.length; i++) {
+                for (let j = i + 1; j < normalizedNames.length; j++) {
+                    const drug1 = normalizedNames[i];
+                    const drug2 = normalizedNames[j];
+
+                    const interaction = findInteraction(drug1, drug2);
+                    if (interaction) {
+                        results.push({
+                            ...interaction,
+                            drug1Name: drugList[i].original,
+                            drug2Name: drugList[j].original,
+                        });
+                    } else {
+                        results.push({
+                            drug1Name: drugList[i].original,
+                            drug2Name: drugList[j].original,
+                            level: 'info',
+                            description: '未在数据库中找到这两种药物的已知相互作用记录。',
+                            advice: '这不代表完全没有相互作用，只是暂未收录。建议服用前咨询医生或药师。',
+                            interval: '建议咨询药师'
+                        });
+                    }
+                }
+            }
+
+            const levelOrder = { 'danger': 0, 'warning': 1, 'info': 2, 'safe': 3 };
+            results.sort((a, b) => levelOrder[a.level] - levelOrder[b.level]);
+
+            return results;
+        }
+
+        function findInteraction(drug1, drug2) {
+            return drugDatabase.interactions.find(item => {
+                return (item.drugs.includes(drug1) && item.drugs.includes(drug2));
+            });
+        }
+
+        function displayResults(results) {
+            const section = document.getElementById('resultSection');
+            
+            const dangerCount = results.filter(r => r.level === 'danger').length;
+            const warningCount = results.filter(r => r.level === 'warning').length;
+            const safeCount = results.filter(r => r.level === 'safe').length;
+
+            let html = '';
+
+            // 总结卡片
+            if (dangerCount > 0) {
+                html += `<div class="summary-card" style="background: linear-gradient(135deg, #dc2626 0%, #9f1239 100%);">
+                    <h3>⚠️ 发现严重相互作用</h3>
+                    <p>在您添加的药品中，发现 ${dangerCount} 组严重相互作用${warningCount > 0 ? `，${warningCount} 组需注意的相互作用` : ''}。请仔细阅读以下建议。</p>
+                </div>`;
+            } else if (warningCount > 0) {
+                html += `<div class="summary-card" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+                    <h3>⚡ 部分药品需注意服用间隔</h3>
+                    <p>发现 ${warningCount} 组需要注意的相互作用。按建议的时间间隔服用即可。</p>
+                </div>`;
+            } else {
+                html += `<div class="summary-card">
+                    <h3>✅ 检查结果良好</h3>
+                    <p>未发现严重的药品相互作用${safeCount > 0 ? '，部分组合可以安全联用。' : '。但建议服用前仍咨询药师确认。'}</p>
+                </div>`;
+            }
+
+            // 建议服用顺序
+            const timelineItems = generateTimeline(results);
+            if (timelineItems.length > 0) {
+                html += `<div class="summary-card">
+                    <h3>⏰ 建议服用顺序与间隔</h3>
+                    <div class="timeline">
+                        ${timelineItems.map(item => `
+                            <div class="timeline-item">${item}</div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // 详细结果
+            const levelLabels = {
+                'danger': '🚫 严重冲突',
+                'warning': '⚡ 需要注意',
+                'safe': '✅ 可以联用',
+                'info': 'ℹ️ 未知组合'
+            };
+
+            html += results.map(result => `
+                <div class="result-item ${result.level}">
+                    <div class="result-level">${levelLabels[result.level]}</div>
+                    <div class="result-drugs">${result.drug1Name} + ${result.drug2Name}</div>
+                    <div class="result-desc">${result.description}</div>
+                    <div class="result-advice">
+                        <strong>服用建议：</strong>${result.advice}<br>
+                        <strong>间隔时间：</strong>${result.interval}
+                    </div>
+                </div>
+            `).join('');
+
+            section.innerHTML = html;
+            section.classList.add('show');
+
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function generateTimeline(results) {
+            const items = [];
+
+            const dangerPairs = results.filter(r => r.level === 'danger');
+            dangerPairs.forEach(r => {
+                items.push(`🚫 ${r.drug1Name} 与 ${r.drug2Name}：${r.interval}`);
+            });
+
+            const warningPairs = results.filter(r => r.level === 'warning' && r.interval && !r.interval.includes('选一种'));
+            warningPairs.forEach(r => {
+                items.push(`⚡ ${r.drug1Name} 与 ${r.drug2Name}：${r.interval}`);
+            });
+
+            if (items.length === 0 && results.every(r => r.level === 'safe' || r.level === 'info')) {
+                items.push('所有药品可按各自说明书时间正常服用');
+            }
+
+            return items;
+        }
+
+        // ==================== 拍照识别 ====================
+        function takePhoto() {
+            document.getElementById('cameraInput').click();
+        }
+
+        function pickFromGallery() {
+            document.getElementById('galleryInput').click();
+        }
+
+        async function handleImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById('ocrPreview');
+            const img = document.getElementById('ocrImage');
+            const ocrText = document.getElementById('ocrText');
+            const ocrDrugs = document.getElementById('ocrDrugs');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                preview.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+
+            ocrText.textContent = '正在识别药品信息...';
+            ocrDrugs.innerHTML = '';
+            showLoading('正在OCR识别中...');
+
+            try {
+                const result = await Tesseract.recognize(file, 'chi_sim+eng', {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            document.getElementById('loadingText').textContent = 
+                                `识别中... ${Math.round(m.progress * 100)}%`;
+                        }
+                    }
+                });
+
+                hideLoading();
+                const text = result.data.text;
+                ocrText.textContent = '识别结果：' + text.substring(0, 200);
+
+                const foundDrugs = matchDrugsFromText(text);
+                
+                if (foundDrugs.length > 0) {
+                    ocrDrugs.innerHTML = '<span style="font-size:12px;color:#6b7280;display:block;margin-bottom:6px;">识别到以下药品，点击添加：</span>' +
+                        foundDrugs.map(name => 
+                            `<button class="ocr-drug-btn" onclick="addDrug('${name}')">${name}</button>`
+                        ).join('');
+                } else {
+                    ocrDrugs.innerHTML = '<span style="font-size:12px;color:#9ca3af;">未能自动匹配到已知药品名称，请尝试手动输入</span>';
+                }
+            } catch (error) {
+                hideLoading();
+                ocrText.textContent = '识别失败，请尝试重新拍照或手动输入药品名称';
+                console.error('OCR Error:', error);
+            }
+
+            event.target.value = '';
+        }
+
+        function matchDrugsFromText(text) {
+            const found = [];
+            const allNames = [];
+
+            for (const [generic, brands] of Object.entries(drugDatabase.aliases)) {
+                allNames.push(generic);
+                brands.forEach(b => allNames.push(b));
+            }
+
+            allNames.sort((a, b) => b.length - a.length);
+
+            for (const name of allNames) {
+                if (name.length >= 2 && text.includes(name) && !found.includes(name)) {
+                    found.push(name);
+                }
+            }
+
+            return found.slice(0, 5);
+        }
+
+        // ==================== 工具函数 ====================
+        function showLoading(text) {
+            document.getElementById('loadingText').textContent = text || '处理中...';
+            document.getElementById('loading').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.75);color:white;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Enter键添加
+        document.getElementById('drugInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addDrug();
+            }
+        });
+    </script>
+</body>
+</html>
