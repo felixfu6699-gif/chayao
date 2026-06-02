@@ -42,14 +42,7 @@
         }
 
         .header h1::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            right: -12px;
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #c0564b;
+            display: none;
         }
 
         .header p {
@@ -652,12 +645,12 @@
 <body>
     <div class="header">
         <h1>这些药能不能一起吃？</h1>
-        <p><span class="pill-icon"></span>输入药品名称或拍照，查询是否能同时服用</p>
+        <p>输入药品名称或拍照，查询是否能同时服用</p>
     </div>
 
     <div class="container">
         <div class="input-section">
-            <div class="section-label">输入药品 <span class="capsule"></span></div>
+            <div class="section-label">输入药品名</div>
             <div class="input-row">
                 <input type="text" class="drug-input" id="drugInput" placeholder="药品名称，如布洛芬" />
                 <button class="btn-add" onclick="addDrug()">添加</button>
@@ -683,7 +676,7 @@
         </div>
 
         <div class="drug-list-section">
-            <div class="section-label">已添加药品 <span class="capsule"></span></div>
+            <div class="section-label">已添加药品</div>
             <div class="drug-tags" id="drugTags">
                 <div class="empty-hint">请添加至少两种药品</div>
             </div>
