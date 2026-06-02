@@ -640,6 +640,311 @@
             display: block;
             margin-bottom: 8px;
         }
+
+        /* AI 深度验证区域 */
+        .ai-verify-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0eeec;
+        }
+
+        .btn-ai-verify {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #4a6cf7 0%, #6366f1 100%);
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-ai-verify:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-ai-verify:disabled {
+            background: #d0d0d0;
+            cursor: not-allowed;
+        }
+
+        .btn-ai-verify .ai-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .ai-config-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #999;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* AI 结果卡片 */
+        .ai-result-section {
+            margin-top: 20px;
+            animation: slideUp 0.4s ease;
+        }
+
+        .ai-result-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 400;
+            color: #4a6cf7;
+            letter-spacing: 1px;
+        }
+
+        .ai-result-card {
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e8e6f8;
+            background: #fafaff;
+            margin-bottom: 16px;
+        }
+
+        .ai-grade-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .ai-grade-badge.grade-x { background: #fde8e8; color: #991b1b; }
+        .ai-grade-badge.grade-a { background: #fee2e2; color: #c0564b; }
+        .ai-grade-badge.grade-b { background: #fef3c7; color: #92400e; }
+        .ai-grade-badge.grade-c { background: #ecfdf5; color: #065f46; }
+        .ai-grade-badge.grade-d { background: #f0f0f0; color: #666; }
+
+        .ai-card-drugs {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 10px;
+        }
+
+        .ai-card-field {
+            margin-bottom: 10px;
+        }
+
+        .ai-card-field-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #4a6cf7;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-card-field-content {
+            font-size: 13px;
+            font-weight: 300;
+            color: #444;
+            line-height: 1.8;
+        }
+
+        /* 配置弹窗 */
+        .config-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .config-modal.show {
+            display: flex;
+        }
+
+        .config-box {
+            width: 100%;
+            max-width: 380px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .config-title {
+            font-size: 16px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .config-field {
+            margin-bottom: 16px;
+        }
+
+        .config-label {
+            font-size: 12px;
+            font-weight: 400;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .config-select, .config-input {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #e0dedc;
+            border-radius: 10px;
+            padding: 0 14px;
+            font-size: 14px;
+            color: #2c2c2c;
+            background: #fafaf8;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .config-select:focus, .config-input:focus {
+            border-color: #4a6cf7;
+        }
+
+        .config-hint {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .config-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .config-btn {
+            flex: 1;
+            height: 42px;
+            border-radius: 21px;
+            font-size: 13px;
+            font-weight: 400;
+            cursor: pointer;
+            border: none;
+            letter-spacing: 0.5px;
+        }
+
+        .config-btn-cancel {
+            background: #f0eeec;
+            color: #666;
+        }
+
+        .config-btn-save {
+            background: #4a6cf7;
+            color: #fff;
+        }
+
+        .config-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .config-field label {
+            font-size: 12px;
+            font-weight: 400;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .config-field select,
+        .config-field input {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #e0dedc;
+            border-radius: 10px;
+            padding: 0 14px;
+            font-size: 14px;
+            color: #2c2c2c;
+            background: #fafaf8;
+            outline: none;
+            -webkit-appearance: none;
+            box-sizing: border-box;
+        }
+
+        .config-field select:focus,
+        .config-field input:focus {
+            border-color: #4a6cf7;
+        }
+
+        /* AI 验证结果详细样式 */
+        .ai-results-title {
+            font-size: 14px;
+            font-weight: 400;
+            color: #4a6cf7;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-top: 8px;
+        }
+
+        .ai-result-card .ai-result-header {
+            margin-bottom: 12px;
+        }
+
+        .ai-drug-pair {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+        }
+
+        .ai-result-body {
+            padding-top: 4px;
+        }
+
+        .ai-field {
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 300;
+            color: #444;
+            line-height: 1.8;
+        }
+
+        .ai-field strong {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .ai-escalation {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: #fff5f5;
+            border-radius: 8px;
+            border-left: 3px solid #dc3545;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ai-icon.spinning {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -687,6 +992,16 @@
         </button>
 
         <div class="result-section" id="resultSection">
+        </div>
+
+        <!-- AI 深度验证区域 -->
+        <div class="ai-verify-section" id="aiVerifySection" style="display:none;">
+            <button class="btn-ai-verify" id="btnAiVerify" onclick="startAiVerify()">
+                <svg class="ai-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                AI 深度验证（大模型审核）
+            </button>
+            <span class="ai-config-link" onclick="showConfigModal()">配置 AI 模型与 API Key</span>
+            <div class="ai-result-section" id="aiResultSection"></div>
         </div>
 
         <div class="disclaimer-box" id="disclaimerBox">
@@ -1187,6 +1502,323 @@
                 addDrug();
             }
         });
+
+        // ============ AI 深度验证模块 ============
+
+        function getAiConfig() {
+            const saved = localStorage.getItem('drugChecker_aiConfig');
+            if (saved) return JSON.parse(saved);
+            return { provider: 'openai', apiKey: '', model: '', baseUrl: '' };
+        }
+
+        function saveAiConfig(config) {
+            localStorage.setItem('drugChecker_aiConfig', JSON.stringify(config));
+        }
+
+        function showConfigModal() {
+            const config = getAiConfig();
+            document.getElementById('configModal').style.display = 'flex';
+            document.getElementById('cfgProvider').value = config.provider || 'openai';
+            document.getElementById('cfgApiKey').value = config.apiKey || '';
+            document.getElementById('cfgModel').value = config.model || '';
+            document.getElementById('cfgBaseUrl').value = config.baseUrl || '';
+            updateModelPlaceholder();
+        }
+
+        function hideConfigModal() {
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        function updateModelPlaceholder() {
+            const provider = document.getElementById('cfgProvider').value;
+            const modelInput = document.getElementById('cfgModel');
+            const urlInput = document.getElementById('cfgBaseUrl');
+            if (provider === 'openai') {
+                modelInput.placeholder = 'gpt-4o（默认）';
+                urlInput.placeholder = 'https://api.openai.com（默认）';
+            } else if (provider === 'anthropic') {
+                modelInput.placeholder = 'claude-sonnet-4-20250514（默认）';
+                urlInput.placeholder = 'https://api.anthropic.com（默认）';
+            } else if (provider === 'google') {
+                modelInput.placeholder = 'gemini-2.5-flash（默认）';
+                urlInput.placeholder = 'https://generativelanguage.googleapis.com（默认）';
+            }
+        }
+
+        function saveConfigAndClose() {
+            const config = {
+                provider: document.getElementById('cfgProvider').value,
+                apiKey: document.getElementById('cfgApiKey').value.trim(),
+                model: document.getElementById('cfgModel').value.trim(),
+                baseUrl: document.getElementById('cfgBaseUrl').value.trim()
+            };
+            if (!config.apiKey) {
+                showToast('请输入 API Key');
+                return;
+            }
+            saveAiConfig(config);
+            hideConfigModal();
+            showToast('配置已保存');
+        }
+
+        function buildSystemPrompt() {
+            return `你是一个"药物相互作用安全查询引擎"，专门用于回答与"两种或多种药物合用时的安全性"相关的问题。
+
+核心规则：
+1. 仅回答与"药物相互作用"直接相关的安全性问题。
+2. 所有结论必须基于具有高可信度的医学/药学循证来源。
+3. 严格使用 X/A/B/C/D 五级分级系统描述相互作用等级。
+4. 对不确定或高风险的结论，必须明确标注"升级建议"，引导患者咨询专业人士。
+
+分级标准：
+- X级（禁忌合用）：合用可导致严重不良后果，临床几乎无例外禁止。
+- A级（无已知相互作用）：现有循证证据未发现具有临床意义的相互作用。
+- B级（无需调整）：有轻度理论风险，但临床实践通常无需特殊处理。
+- C级（需监测）：合用有中度风险，可能需监测症状/指标、调整剂量或给药时间。
+- D级（需调整方案）：合用有较高风险，通常需调整剂量、更换药物或密切医学监护。
+
+输出格式要求（JSON）：
+{
+  "grade": "X/A/B/C/D",
+  "drug_pair": ["药物A", "药物B"],
+  "mechanism": "相互作用机制简述",
+  "clinical_effect": "临床影响/不良后果",
+  "management": "处理建议",
+  "evidence_level": "证据等级（高/中/低）",
+  "sources": ["来源1", "来源2"],
+  "escalation": "是否建议升级咨询（是/否+原因）"
+}
+
+如有多对药物，请逐对输出JSON数组。
+
+禁止行为：
+- 不回答超出药物相互作用范围的问题
+- 不编造证据来源
+- 不给出模糊或无分级的结论`;
+        }
+
+        function buildUserPrompt(drugs, localResults) {
+            let prompt = `请对以下药物组合进行深度相互作用安全性分析：\n\n药物列表：${drugs.join('、')}\n\n`;
+            if (localResults && localResults.length > 0) {
+                prompt += '本地数据库已检出以下相互作用（请验证其准确性并补充遗漏）：\n';
+                localResults.forEach(function(r) {
+                    prompt += `- ${r.drug1} + ${r.drug2}：${r.severity}，${r.description}\n`;
+                });
+            } else {
+                prompt += '本地数据库未检出已知相互作用，请分析是否存在潜在风险。\n';
+            }
+            prompt += '\n请严格按照JSON格式输出分析结果。如有多对组合，输出JSON数组。';
+            return prompt;
+        }
+
+        async function callLLM(systemPrompt, userPrompt) {
+            const config = getAiConfig();
+            if (!config.apiKey) {
+                throw new Error('请先配置 AI 模型的 API Key');
+            }
+
+            const provider = config.provider;
+            let url, headers, body;
+
+            if (provider === 'openai') {
+                const baseUrl = config.baseUrl || 'https://api.openai.com';
+                const model = config.model || 'gpt-4o';
+                url = `${baseUrl}/v1/chat/completions`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.apiKey}`
+                };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    temperature: 0.1
+                });
+            } else if (provider === 'anthropic') {
+                const baseUrl = config.baseUrl || 'https://api.anthropic.com';
+                const model = config.model || 'claude-sonnet-4-20250514';
+                url = `${baseUrl}/v1/messages`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-api-key': config.apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true'
+                };
+                body = JSON.stringify({
+                    model: model,
+                    max_tokens: 4096,
+                    system: systemPrompt,
+                    messages: [
+                        { role: 'user', content: userPrompt }
+                    ]
+                });
+            } else if (provider === 'google') {
+                const baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com';
+                const model = config.model || 'gemini-2.5-flash';
+                url = `${baseUrl}/v1beta/models/${model}:generateContent?key=${config.apiKey}`;
+                headers = { 'Content-Type': 'application/json' };
+                body = JSON.stringify({
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    generationConfig: { temperature: 0.1 }
+                });
+            }
+
+            const response = await fetch(url, { method: 'POST', headers: headers, body: body });
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`API 请求失败 (${response.status}): ${errText.substring(0, 200)}`);
+            }
+
+            const data = await response.json();
+            let content = '';
+            if (provider === 'openai') {
+                content = data.choices[0].message.content;
+            } else if (provider === 'anthropic') {
+                content = data.content[0].text;
+            } else if (provider === 'google') {
+                content = data.candidates[0].content.parts[0].text;
+            }
+            return content;
+        }
+
+        function parseAiResponse(text) {
+            // 尝试提取 JSON
+            let jsonStr = text;
+            const jsonMatch = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\[[\s\S]*\])/) || text.match(/(\{[\s\S]*\})/);
+            if (jsonMatch) jsonStr = jsonMatch[1];
+            try {
+                const parsed = JSON.parse(jsonStr);
+                return Array.isArray(parsed) ? parsed : [parsed];
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function getGradeColor(grade) {
+            const colors = { 'X': '#dc3545', 'A': '#28a745', 'B': '#17a2b8', 'C': '#ffc107', 'D': '#fd7e14' };
+            return colors[grade.toUpperCase()] || '#6c757d';
+        }
+
+        function renderAiResults(results) {
+            const section = document.getElementById('aiResultSection');
+            if (!results || results.length === 0) {
+                section.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">AI 未能解析出结构化结果，请检查输入或重试。</div>';
+                return;
+            }
+            let html = '<div class="ai-results-title">AI 深度验证结果</div>';
+            results.forEach(function(r) {
+                const grade = (r.grade || '?').toUpperCase();
+                const gradeClass = 'grade-' + grade.toLowerCase();
+                html += `
+                <div class="ai-result-card">
+                    <div class="ai-result-header">
+                        <span class="ai-grade-badge ${gradeClass}">${grade}级</span>
+                        <span class="ai-drug-pair">${(r.drug_pair || []).join(' + ')}</span>
+                    </div>
+                    <div class="ai-result-body">
+                        <div class="ai-field"><strong>机制：</strong>${r.mechanism || '未说明'}</div>
+                        <div class="ai-field"><strong>临床影响：</strong>${r.clinical_effect || '未说明'}</div>
+                        <div class="ai-field"><strong>处理建议：</strong>${r.management || '未说明'}</div>
+                        <div class="ai-field"><strong>证据等级：</strong>${r.evidence_level || '未说明'}</div>
+                        <div class="ai-field"><strong>来源：</strong>${(r.sources || []).join('；')}</div>
+                        ${r.escalation ? `<div class="ai-field ai-escalation"><strong>升级建议：</strong>${r.escalation}</div>` : ''}
+                    </div>
+                </div>`;
+            });
+            section.innerHTML = html;
+        }
+
+        async function startAiVerify() {
+            const config = getAiConfig();
+            if (!config.apiKey) {
+                showConfigModal();
+                showToast('请先配置 API Key');
+                return;
+            }
+            if (selectedDrugs.length < 2) {
+                showToast('请至少添加两种药品');
+                return;
+            }
+
+            const btn = document.getElementById('btnAiVerify');
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="ai-icon spinning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> AI 正在分析中...';
+
+            try {
+                // 获取当前本地查询结果
+                const localResults = [];
+                const resultCards = document.querySelectorAll('.result-card');
+                resultCards.forEach(function(card) {
+                    const title = card.querySelector('.result-title');
+                    const desc = card.querySelector('.result-description');
+                    const severity = card.querySelector('.severity-badge');
+                    if (title && desc) {
+                        const drugs = title.textContent.split('+').map(function(s){return s.trim();});
+                        localResults.push({
+                            drug1: drugs[0] || '',
+                            drug2: drugs[1] || '',
+                            severity: severity ? severity.textContent.trim() : '',
+                            description: desc.textContent.trim()
+                        });
+                    }
+                });
+
+                const systemPrompt = buildSystemPrompt();
+                const userPrompt = buildUserPrompt(selectedDrugs, localResults);
+                const responseText = await callLLM(systemPrompt, userPrompt);
+                const parsed = parseAiResponse(responseText);
+                renderAiResults(parsed);
+            } catch(err) {
+                document.getElementById('aiResultSection').innerHTML = `<div style="padding:20px;text-align:center;color:#dc3545;">验证失败：${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="ai-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> AI 深度验证（大模型审核）';
+            }
+        }
+
+        // 在 checkInteractions 完成后显示 AI 验证按钮
+        const origDisplayResults = displayResults;
+        displayResults = function(results) {
+            origDisplayResults(results);
+            if (selectedDrugs.length >= 2) {
+                document.getElementById('aiVerifySection').style.display = 'block';
+            }
+        };
+
     </script>
+
+    <!-- AI 配置弹窗 -->
+    <div class="config-modal" id="configModal" style="display:none;" onclick="if(event.target===this)hideConfigModal()">
+        <div class="config-box">
+            <div class="config-title">AI 模型配置</div>
+            <div class="config-field">
+                <label>模型提供商</label>
+                <select id="cfgProvider" onchange="updateModelPlaceholder()">
+                    <option value="openai">OpenAI (GPT)</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                    <option value="google">Google (Gemini)</option>
+                </select>
+            </div>
+            <div class="config-field">
+                <label>API Key</label>
+                <input type="password" id="cfgApiKey" placeholder="输入你的 API Key">
+            </div>
+            <div class="config-field">
+                <label>模型名称（可选）</label>
+                <input type="text" id="cfgModel" placeholder="留空使用默认模型">
+            </div>
+            <div class="config-field">
+                <label>自定义 Base URL（可选）</label>
+                <input type="text" id="cfgBaseUrl" placeholder="留空使用官方地址">
+            </div>
+            <div class="config-actions">
+                <button class="config-btn config-btn-cancel" onclick="hideConfigModal()">取消</button>
+                <button class="config-btn config-btn-save" onclick="saveConfigAndClose()">保存</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
