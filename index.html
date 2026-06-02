@@ -17,243 +17,320 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-            background: #f5f7fa;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif;
+            background: #ffffff;
+            color: #2c2c2c;
             min-height: 100vh;
             padding-bottom: env(safe-area-inset-bottom);
         }
 
         .header {
             width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px 16px 24px;
-            color: white;
+            padding: 48px 24px 32px;
             text-align: center;
-            box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
+            border-bottom: 1px solid #f0eeec;
         }
 
         .header h1 {
-            font-size: 19px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: #2c2c2c;
+            margin-bottom: 12px;
         }
 
         .header p {
             font-size: 12px;
-            opacity: 0.85;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: 300;
+            color: #999;
+            letter-spacing: 1px;
         }
 
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 440px;
             margin: 0 auto;
-            padding: 16px;
-            box-sizing: border-box;
+            padding: 32px 24px;
         }
 
         .input-section {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 400;
+            color: #999;
+            letter-spacing: 2px;
+            text-transform: uppercase;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .section-title .icon {
-            font-size: 18px;
         }
 
         .input-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            align-items: center;
         }
 
         .drug-input {
             flex: 1;
-            height: 44px;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 0 14px;
-            font-size: 15px;
+            height: 48px;
+            border: none;
+            border-bottom: 1px solid #e0dedc;
+            padding: 0 4px;
+            font-size: 16px;
+            font-weight: 300;
+            color: #2c2c2c;
+            background: transparent;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.3s ease;
+            border-radius: 0;
+            -webkit-appearance: none;
+        }
+
+        .drug-input::placeholder {
+            color: #ccc;
+            font-weight: 300;
         }
 
         .drug-input:focus {
-            border-color: #667eea;
+            border-bottom-color: #2c2c2c;
         }
 
         .btn-add {
-            height: 44px;
-            padding: 0 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 500;
+            height: 48px;
+            padding: 0 20px;
+            background: transparent;
+            color: #2c2c2c;
+            border: 1px solid #2c2c2c;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 1px;
             cursor: pointer;
             white-space: nowrap;
-            transition: transform 0.1s, opacity 0.2s;
+            transition: all 0.2s ease;
         }
 
         .btn-add:active {
-            transform: scale(0.95);
-            opacity: 0.9;
+            background: #2c2c2c;
+            color: #fff;
         }
 
         .camera-section {
             display: flex;
-            gap: 10px;
-            margin-top: 12px;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         .btn-camera, .btn-gallery {
             flex: 1;
             height: 44px;
-            border: 1.5px dashed #d1d5db;
-            border-radius: 12px;
-            background: #fafbfc;
-            color: #6b7280;
-            font-size: 14px;
+            border: 1px solid #e8e6e3;
+            border-radius: 22px;
+            background: transparent;
+            color: #888;
+            font-size: 13px;
+            font-weight: 300;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
         .btn-camera:active, .btn-gallery:active {
-            background: #f0f0f5;
-            border-color: #667eea;
-            color: #667eea;
+            border-color: #2c2c2c;
+            color: #2c2c2c;
         }
 
         .drug-list-section {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid #f0eeec;
         }
 
         .drug-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             min-height: 40px;
+            align-items: center;
         }
 
         .drug-tag {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            background: linear-gradient(135deg, #f0f3ff 0%, #f8f0ff 100%);
-            border: 1px solid #e0e4ff;
-            border-radius: 20px;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #fafaf8;
+            border: 1px solid #eae8e5;
+            border-radius: 24px;
             font-size: 14px;
-            color: #4c5680;
+            font-weight: 300;
+            color: #2c2c2c;
             animation: fadeIn 0.3s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .drug-tag .remove {
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #d1d5db;
-            color: white;
-            font-size: 12px;
+            background: transparent;
+            border: 1px solid #ccc;
+            color: #999;
+            font-size: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             line-height: 1;
+            transition: all 0.2s;
         }
 
         .drug-tag .remove:active {
-            background: #ef4444;
+            background: #2c2c2c;
+            border-color: #2c2c2c;
+            color: white;
         }
 
         .empty-hint {
-            color: #9ca3af;
-            font-size: 14px;
-            text-align: center;
-            padding: 12px 0;
+            color: #ccc;
+            font-size: 13px;
+            font-weight: 300;
+            padding: 8px 0;
         }
 
         .btn-check {
             width: 100%;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            height: 52px;
+            background: #2c2c2c;
+            color: #fff;
             border: none;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 600;
+            border-radius: 26px;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 2px;
             cursor: pointer;
-            margin-bottom: 16px;
-            transition: transform 0.1s, opacity 0.2s;
-            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            margin-bottom: 32px;
+            transition: all 0.2s ease;
         }
 
         .btn-check:active {
-            transform: scale(0.97);
+            transform: scale(0.98);
+            opacity: 0.9;
         }
 
         .btn-check:disabled {
-            opacity: 0.5;
+            background: #e8e6e3;
+            color: #bbb;
             cursor: not-allowed;
         }
 
         .result-section {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             display: none;
         }
 
         .result-section.show {
             display: block;
-            animation: slideUp 0.3s ease;
+            animation: slideUp 0.4s ease;
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .summary-card {
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            border: 1px solid #f0eeec;
+        }
+
+        .summary-card.danger-summary {
+            background: #fffbfa;
+            border-color: #f0e0dc;
+        }
+
+        .summary-card.warning-summary {
+            background: #fffcf5;
+            border-color: #f0e8d8;
+        }
+
+        .summary-card.safe-summary {
+            background: #f8fcf8;
+            border-color: #dceede;
+        }
+
+        .summary-card h3 {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .summary-card p {
+            font-size: 13px;
+            font-weight: 300;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .timeline-card {
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            background: #fafaf8;
+            border: 1px solid #f0eeec;
+        }
+
+        .timeline-card h3 {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .timeline {
+            padding-left: 20px;
+            border-left: 1px solid #e0dedc;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px 0 10px 16px;
+            font-size: 13px;
+            font-weight: 300;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 16px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #2c2c2c;
+        }
+
         .result-item {
-            padding: 14px;
+            padding: 20px 24px;
             border-radius: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #f0eeec;
+            background: #ffffff;
         }
 
         .result-item:last-child {
@@ -261,71 +338,75 @@
         }
 
         .result-item.danger {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
+            border-left: 3px solid #c0564b;
+            background: #fffbfa;
         }
 
         .result-item.warning {
-            background: #fffbeb;
-            border: 1px solid #fed7aa;
+            border-left: 3px solid #c4924a;
+            background: #fffcf5;
         }
 
         .result-item.safe {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
+            border-left: 3px solid #5a9e6f;
+            background: #f8fcf8;
         }
 
         .result-item.info {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
+            border-left: 3px solid #b0b0b0;
+            background: #fafaf8;
         }
 
         .result-level {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 12px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
         }
 
-        .result-item.danger .result-level { color: #dc2626; }
-        .result-item.warning .result-level { color: #d97706; }
-        .result-item.safe .result-level { color: #16a34a; }
-        .result-item.info .result-level { color: #2563eb; }
+        .result-item.danger .result-level { color: #c0564b; }
+        .result-item.warning .result-level { color: #c4924a; }
+        .result-item.safe .result-level { color: #5a9e6f; }
+        .result-item.info .result-level { color: #999; }
 
         .result-drugs {
-            font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 6px;
+            font-size: 15px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 8px;
         }
 
         .result-desc {
-            font-size: 14px;
-            color: #4b5563;
-            line-height: 1.6;
+            font-size: 13px;
+            font-weight: 300;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 12px;
         }
 
         .result-advice {
-            margin-top: 8px;
-            padding: 10px 12px;
-            background: rgba(255,255,255,0.7);
+            padding: 16px;
+            background: #fafaf8;
             border-radius: 8px;
-            font-size: 13px;
-            color: #374151;
-            line-height: 1.6;
+            font-size: 12px;
+            font-weight: 300;
+            color: #555;
+            line-height: 1.8;
         }
 
         .result-advice strong {
-            color: #667eea;
+            font-weight: 400;
+            color: #2c2c2c;
         }
 
         .disclaimer {
             text-align: center;
-            font-size: 12px;
-            color: #9ca3af;
-            padding: 20px 16px;
-            line-height: 1.6;
+            font-size: 11px;
+            font-weight: 300;
+            color: #bbb;
+            padding: 40px 16px 24px;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
         }
 
         .loading-overlay {
@@ -335,7 +416,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.4);
+            background: rgba(255, 255, 255, 0.92);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -346,20 +427,17 @@
         }
 
         .loading-box {
-            background: white;
-            border-radius: 16px;
-            padding: 30px 40px;
             text-align: center;
         }
 
         .loading-spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid #e5e7eb;
-            border-top-color: #667eea;
+            width: 32px;
+            height: 32px;
+            border: 1.5px solid #e8e6e3;
+            border-top-color: #2c2c2c;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 12px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
         }
 
         @keyframes spin {
@@ -367,17 +445,19 @@
         }
 
         .loading-text {
-            font-size: 14px;
-            color: #6b7280;
+            font-size: 12px;
+            font-weight: 300;
+            color: #999;
+            letter-spacing: 1px;
         }
 
         .ocr-preview {
             display: none;
-            margin-top: 12px;
-            padding: 12px;
-            background: #f9fafb;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
+            margin-top: 20px;
+            padding: 16px;
+            background: #fafaf8;
+            border-radius: 12px;
+            border: 1px solid #f0eeec;
         }
 
         .ocr-preview.show {
@@ -386,104 +466,76 @@
 
         .ocr-preview img {
             width: 100%;
-            max-height: 200px;
+            max-height: 180px;
             object-fit: contain;
             border-radius: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .ocr-result-text {
-            font-size: 13px;
-            color: #6b7280;
-            line-height: 1.5;
+            font-size: 12px;
+            font-weight: 300;
+            color: #999;
+            line-height: 1.6;
         }
 
         .ocr-drugs-found {
-            margin-top: 8px;
+            margin-top: 12px;
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
         }
 
         .ocr-drug-btn {
-            padding: 6px 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 13px;
+            padding: 8px 16px;
+            background: transparent;
+            color: #2c2c2c;
+            border: 1px solid #2c2c2c;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 300;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .ocr-drug-btn:active {
-            opacity: 0.8;
+            background: #2c2c2c;
+            color: #fff;
         }
 
-        .summary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 16px;
-            color: white;
+        .drug-tag-alias {
+            font-size: 11px;
+            color: #999;
+            margin-left: 4px;
         }
 
-        .summary-card h3 {
-            font-size: 15px;
+        .ocr-hint {
+            font-size: 12px;
+            color: #999;
+            display: block;
             margin-bottom: 8px;
-            opacity: 0.95;
-        }
-
-        .summary-card p {
-            font-size: 14px;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-
-        .timeline {
-            margin-top: 12px;
-            padding-left: 16px;
-            border-left: 2px solid rgba(255,255,255,0.3);
-        }
-
-        .timeline-item {
-            position: relative;
-            padding: 8px 0 8px 16px;
-            font-size: 14px;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -21px;
-            top: 14px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: white;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>💊 药品相互作用查询</h1>
-        <p>查询药品是否能一起吃，了解安全服用间隔</p>
+        <h1>药品相互作用查询</h1>
+        <p>查询药品能否同时服用及安全间隔</p>
     </div>
 
     <div class="container">
         <div class="input-section">
-            <div class="section-title">
-                <span class="icon">✏️</span> 输入药品名称
-            </div>
+            <div class="section-label">输入药品</div>
             <div class="input-row">
-                <input type="text" class="drug-input" id="drugInput" placeholder="输入药品名称，如：布洛芬" />
+                <input type="text" class="drug-input" id="drugInput" placeholder="药品名称，如布洛芬" />
                 <button class="btn-add" onclick="addDrug()">添加</button>
             </div>
             <div class="camera-section">
                 <button class="btn-camera" onclick="takePhoto()">
-                    📷 拍照识别
+                    拍照识别
                 </button>
                 <button class="btn-gallery" onclick="pickFromGallery()">
-                    🖼️ 相册选取
+                    相册选取
                 </button>
             </div>
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)" />
@@ -497,24 +549,22 @@
         </div>
 
         <div class="drug-list-section">
-            <div class="section-title">
-                <span class="icon">📋</span> 已添加药品
-            </div>
+            <div class="section-label">已添加药品</div>
             <div class="drug-tags" id="drugTags">
-                <div class="empty-hint">请添加至少2种药品进行查询</div>
+                <div class="empty-hint">请添加至少两种药品</div>
             </div>
         </div>
 
         <button class="btn-check" id="btnCheck" onclick="checkInteractions()" disabled>
-            🔍 查询药品相互作用
+            查询相互作用
         </button>
 
         <div class="result-section" id="resultSection">
         </div>
 
         <div class="disclaimer">
-            ⚠️ 本工具仅供参考，不能替代医生或药师的专业建议。<br>
-            服用多种药品前请咨询医师或药师。
+            本工具仅供参考，不能替代医生或药师的专业建议<br>
+            服用多种药品前请咨询医师或药师
         </div>
     </div>
 
@@ -528,7 +578,6 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
     <script>
-        // ==================== 药品相互作用数据库 ====================
         const drugDatabase = {
             aliases: {
                 '布洛芬': ['芬必得', '美林', '布洛芬缓释胶囊'],
@@ -609,14 +658,14 @@
                 {
                     drugs: ['头孢克洛', '藿香正气水'],
                     level: 'danger',
-                    description: '头孢类抗生素与含酒精的藿香正气水同服会产生"双硫仑样反应"，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。',
+                    description: '头孢类抗生素与含酒精的藿香正气水同服会产生双硫仑样反应，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。',
                     advice: '禁止同时使用！服用头孢类抗生素期间及停药后7天内，不得饮酒或服用含酒精的药物。可用不含酒精的藿香正气口服液替代。',
                     interval: '头孢停药后至少7天才能服用含酒精制剂'
                 },
                 {
                     drugs: ['头孢氨苄', '藿香正气水'],
                     level: 'danger',
-                    description: '头孢类抗生素与含酒精的藿香正气水同服会产生"双硫仑样反应"，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。',
+                    description: '头孢类抗生素与含酒精的藿香正气水同服会产生双硫仑样反应，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。',
                     advice: '禁止同时使用！服用头孢类抗生素期间及停药后7天内，不得饮酒或服用含酒精的药物。',
                     interval: '头孢停药后至少7天才能服用含酒精制剂'
                 },
@@ -875,7 +924,6 @@
             ]
         };
 
-        // ==================== 核心逻辑 ====================
         let drugList = [];
 
         function normalizeDrugName(name) {
@@ -922,7 +970,6 @@
             drugList.splice(index, 1);
             renderDrugTags();
             updateCheckButton();
-            // 如果药品不够，隐藏结果
             if (drugList.length < 2) {
                 document.getElementById('resultSection').classList.remove('show');
             }
@@ -931,18 +978,13 @@
         function renderDrugTags() {
             const container = document.getElementById('drugTags');
             if (drugList.length === 0) {
-                container.innerHTML = '<div class="empty-hint">请添加至少2种药品进行查询</div>';
+                container.innerHTML = '<div class="empty-hint">请添加至少两种药品</div>';
                 return;
             }
 
             container.innerHTML = drugList.map((drug, index) => {
                 const showAlias = drug.original !== drug.normalized;
-                return `
-                    <div class="drug-tag">
-                        ${drug.original}${showAlias ? `<span style="font-size:11px;color:#9ca3af">(${drug.normalized})</span>` : ''}
-                        <span class="remove" onclick="removeDrug(${index})">✕</span>
-                    </div>
-                `;
+                return '<div class="drug-tag"><span>' + drug.original + (showAlias ? '<span class="drug-tag-alias">(' + drug.normalized + ')</span>' : '') + '</span><span class="remove" onclick="removeDrug(' + index + ')">&#215;</span></div>';
             }).join('');
         }
 
@@ -956,7 +998,7 @@
 
             showLoading('正在分析药品相互作用...');
 
-            setTimeout(() => {
+            setTimeout(function() {
                 const results = analyzeInteractions();
                 displayResults(results);
                 hideLoading();
@@ -974,11 +1016,10 @@
 
                     const interaction = findInteraction(drug1, drug2);
                     if (interaction) {
-                        results.push({
-                            ...interaction,
+                        results.push(Object.assign({}, interaction, {
                             drug1Name: drugList[i].original,
                             drug2Name: drugList[j].original,
-                        });
+                        }));
                     } else {
                         results.push({
                             drug1Name: drugList[i].original,
@@ -993,13 +1034,13 @@
             }
 
             const levelOrder = { 'danger': 0, 'warning': 1, 'info': 2, 'safe': 3 };
-            results.sort((a, b) => levelOrder[a.level] - levelOrder[b.level]);
+            results.sort(function(a, b) { return levelOrder[a.level] - levelOrder[b.level]; });
 
             return results;
         }
 
         function findInteraction(drug1, drug2) {
-            return drugDatabase.interactions.find(item => {
+            return drugDatabase.interactions.find(function(item) {
                 return (item.drugs.includes(drug1) && item.drugs.includes(drug2));
             });
         }
@@ -1013,61 +1054,43 @@
 
             let html = '';
 
-            // 总结卡片
             if (dangerCount > 0) {
-                html += `<div class="summary-card" style="background: linear-gradient(135deg, #dc2626 0%, #9f1239 100%);">
-                    <h3>⚠️ 发现严重相互作用</h3>
-                    <p>在您添加的药品中，发现 ${dangerCount} 组严重相互作用${warningCount > 0 ? `，${warningCount} 组需注意的相互作用` : ''}。请仔细阅读以下建议。</p>
-                </div>`;
+                html += '<div class="summary-card danger-summary"><h3>发现严重相互作用</h3><p>发现 ' + dangerCount + ' 组严重相互作用' + (warningCount > 0 ? '，' + warningCount + ' 组需注意' : '') + '。请仔细阅读以下建议。</p></div>';
             } else if (warningCount > 0) {
-                html += `<div class="summary-card" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
-                    <h3>⚡ 部分药品需注意服用间隔</h3>
-                    <p>发现 ${warningCount} 组需要注意的相互作用。按建议的时间间隔服用即可。</p>
-                </div>`;
+                html += '<div class="summary-card warning-summary"><h3>部分药品需注意服用间隔</h3><p>发现 ' + warningCount + ' 组需要注意的相互作用。按建议的时间间隔服用即可。</p></div>';
             } else {
-                html += `<div class="summary-card">
-                    <h3>✅ 检查结果良好</h3>
-                    <p>未发现严重的药品相互作用${safeCount > 0 ? '，部分组合可以安全联用。' : '。但建议服用前仍咨询药师确认。'}</p>
-                </div>`;
+                html += '<div class="summary-card safe-summary"><h3>检查结果良好</h3><p>未发现严重的药品相互作用' + (safeCount > 0 ? '，部分组合可以安全联用。' : '。但建议服用前仍咨询药师确认。') + '</p></div>';
             }
 
-            // 建议服用顺序
             const timelineItems = generateTimeline(results);
             if (timelineItems.length > 0) {
-                html += `<div class="summary-card">
-                    <h3>⏰ 建议服用顺序与间隔</h3>
-                    <div class="timeline">
-                        ${timelineItems.map(item => `
-                            <div class="timeline-item">${item}</div>
-                        `).join('')}
-                    </div>
-                </div>`;
+                html += '<div class="timeline-card"><h3>建议服用顺序与间隔</h3><div class="timeline">';
+                timelineItems.forEach(function(item) {
+                    html += '<div class="timeline-item">' + item + '</div>';
+                });
+                html += '</div></div>';
             }
 
-            // 详细结果
             const levelLabels = {
-                'danger': '🚫 严重冲突',
-                'warning': '⚡ 需要注意',
-                'safe': '✅ 可以联用',
-                'info': 'ℹ️ 未知组合'
+                'danger': '严重冲突',
+                'warning': '需要注意',
+                'safe': '可以联用',
+                'info': '未知组合'
             };
 
-            html += results.map(result => `
-                <div class="result-item ${result.level}">
-                    <div class="result-level">${levelLabels[result.level]}</div>
-                    <div class="result-drugs">${result.drug1Name} + ${result.drug2Name}</div>
-                    <div class="result-desc">${result.description}</div>
-                    <div class="result-advice">
-                        <strong>服用建议：</strong>${result.advice}<br>
-                        <strong>间隔时间：</strong>${result.interval}
-                    </div>
-                </div>
-            `).join('');
+            results.forEach(function(result) {
+                html += '<div class="result-item ' + result.level + '">';
+                html += '<div class="result-level">' + levelLabels[result.level] + '</div>';
+                html += '<div class="result-drugs">' + result.drug1Name + ' + ' + result.drug2Name + '</div>';
+                html += '<div class="result-desc">' + result.description + '</div>';
+                html += '<div class="result-advice"><strong>服用建议：</strong>' + result.advice + '<br><strong>间隔时间：</strong>' + result.interval + '</div>';
+                html += '</div>';
+            });
 
             section.innerHTML = html;
             section.classList.add('show');
 
-            setTimeout(() => {
+            setTimeout(function() {
                 section.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
@@ -1075,14 +1098,12 @@
         function generateTimeline(results) {
             const items = [];
 
-            const dangerPairs = results.filter(r => r.level === 'danger');
-            dangerPairs.forEach(r => {
-                items.push(`🚫 ${r.drug1Name} 与 ${r.drug2Name}：${r.interval}`);
+            results.filter(r => r.level === 'danger').forEach(function(r) {
+                items.push(r.drug1Name + ' 与 ' + r.drug2Name + '：' + r.interval);
             });
 
-            const warningPairs = results.filter(r => r.level === 'warning' && r.interval && !r.interval.includes('选一种'));
-            warningPairs.forEach(r => {
-                items.push(`⚡ ${r.drug1Name} 与 ${r.drug2Name}：${r.interval}`);
+            results.filter(r => r.level === 'warning' && r.interval && r.interval.indexOf('选一种') === -1).forEach(function(r) {
+                items.push(r.drug1Name + ' 与 ' + r.drug2Name + '：' + r.interval);
             });
 
             if (items.length === 0 && results.every(r => r.level === 'safe' || r.level === 'info')) {
@@ -1092,7 +1113,6 @@
             return items;
         }
 
-        // ==================== 拍照识别 ====================
         function takePhoto() {
             document.getElementById('cameraInput').click();
         }
@@ -1119,14 +1139,13 @@
 
             ocrText.textContent = '正在识别药品信息...';
             ocrDrugs.innerHTML = '';
-            showLoading('正在OCR识别中...');
+            showLoading('正在识别中...');
 
             try {
                 const result = await Tesseract.recognize(file, 'chi_sim+eng', {
-                    logger: m => {
+                    logger: function(m) {
                         if (m.status === 'recognizing text') {
-                            document.getElementById('loadingText').textContent = 
-                                `识别中... ${Math.round(m.progress * 100)}%`;
+                            document.getElementById('loadingText').textContent = '识别中... ' + Math.round(m.progress * 100) + '%';
                         }
                     }
                 });
@@ -1138,12 +1157,13 @@
                 const foundDrugs = matchDrugsFromText(text);
                 
                 if (foundDrugs.length > 0) {
-                    ocrDrugs.innerHTML = '<span style="font-size:12px;color:#6b7280;display:block;margin-bottom:6px;">识别到以下药品，点击添加：</span>' +
-                        foundDrugs.map(name => 
-                            `<button class="ocr-drug-btn" onclick="addDrug('${name}')">${name}</button>`
-                        ).join('');
+                    let btns = '<span class="ocr-hint">识别到以下药品，点击添加：</span>';
+                    foundDrugs.forEach(function(name) {
+                        btns += '<button class="ocr-drug-btn" onclick="addDrug(\'' + name + '\')">' + name + '</button>';
+                    });
+                    ocrDrugs.innerHTML = btns;
                 } else {
-                    ocrDrugs.innerHTML = '<span style="font-size:12px;color:#9ca3af;">未能自动匹配到已知药品名称，请尝试手动输入</span>';
+                    ocrDrugs.innerHTML = '<span class="ocr-hint">未能自动匹配到已知药品名称，请尝试手动输入</span>';
                 }
             } catch (error) {
                 hideLoading();
@@ -1163,7 +1183,7 @@
                 brands.forEach(b => allNames.push(b));
             }
 
-            allNames.sort((a, b) => b.length - a.length);
+            allNames.sort(function(a, b) { return b.length - a.length; });
 
             for (const name of allNames) {
                 if (name.length >= 2 && text.includes(name) && !found.includes(name)) {
@@ -1174,7 +1194,6 @@
             return found.slice(0, 5);
         }
 
-        // ==================== 工具函数 ====================
         function showLoading(text) {
             document.getElementById('loadingText').textContent = text || '处理中...';
             document.getElementById('loading').classList.add('show');
@@ -1186,13 +1205,12 @@
 
         function showToast(message) {
             const toast = document.createElement('div');
-            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.75);color:white;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;';
+            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(45,45,45,0.88);color:white;padding:14px 28px;border-radius:24px;font-size:14px;z-index:9999;letter-spacing:0.5px;font-weight:300;';
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
+            setTimeout(function() { toast.remove(); }, 2000);
         }
 
-        // Enter键添加
         document.getElementById('drugInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 addDrug();
