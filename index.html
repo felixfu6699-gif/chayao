@@ -1538,6 +1538,9 @@
             const provider = document.getElementById('cfgProvider').value;
             const modelInput = document.getElementById('cfgModel');
             const urlInput = document.getElementById('cfgBaseUrl');
+            // 切换提供商时清空自定义值，避免残留错误地址
+            modelInput.value = '';
+            urlInput.value = '';
             if (provider === 'openai') {
                 modelInput.placeholder = 'gpt-4o（默认）';
                 urlInput.placeholder = 'https://api.openai.com（默认）';
