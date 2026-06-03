@@ -1545,7 +1545,7 @@
                 modelInput.placeholder = 'claude-sonnet-4-20250514（默认）';
                 urlInput.placeholder = 'https://api.anthropic.com（默认）';
             } else if (provider === 'google') {
-                modelInput.placeholder = 'gemini-2.5-flash（默认）';
+                modelInput.placeholder = 'gemini-2.0-flash（默认）';
                 urlInput.placeholder = 'https://generativelanguage.googleapis.com（默认）';
             }
         }
@@ -1661,7 +1661,7 @@
                 });
             } else if (provider === 'google') {
                 const baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com';
-                const model = config.model || 'gemini-2.5-flash';
+                const model = config.model || 'gemini-2.0-flash';
                 url = `${baseUrl}/v1beta/models/${model}:generateContent?key=${config.apiKey}`;
                 headers = { 'Content-Type': 'application/json' };
                 body = JSON.stringify({
