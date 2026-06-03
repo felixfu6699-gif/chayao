@@ -1015,8 +1015,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    
     <script>
         const drugDatabase = {
             aliases: {
@@ -1071,6 +1069,45 @@
                 '艾司唑仑': ['舒乐安定'],
                 '氟西汀': ['百忧解', '优克'],
                 '舍曲林': ['左洛复'],
+                '大活络丸': ['同仁大活络丸', '同仁堂大活络丸', '大活络胶囊', '大活络口服液', '北京同仁堂大活络丸'],
+                '安宫牛黄丸': ['同仁安宫牛黄丸'],
+                '牛黄解毒片': ['牛黄解毒丸', '牛黄解毒胶囊'],
+                '六味地黄丸': ['六味地黄胶囊', '六味地黄颗粒'],
+                '金匮肾气丸': ['桂附地黄丸', '肾气丸'],
+                '逍遥丸': ['逍遥颗粒', '加味逍遥丸'],
+                '补中益气丸': ['补中益气颗粒', '补中益气口服液'],
+                '归脾丸': ['归脾颗粒', '归脾合剂'],
+                '血府逐瘀丸': ['血府逐瘀胶囊', '血府逐瘀口服液'],
+                '通心络胶囊': ['通心络'],
+                '麝香保心丸': ['麝香保心'],
+                '丹参片': ['复方丹参片', '丹参注射液'],
+                '三七片': ['三七粉', '云南白药三七片'],
+                '云南白药': ['云南白药胶囊', '云南白药气雾剂'],
+                '跌打丸': ['跌打损伤丸'],
+                '正骨水': ['正骨水外用液'],
+                '活血止痛散': ['活血止痛胶囊'],
+                '消炎利胆片': ['消炎利胆胶囊'],
+                '龙胆泻肝丸': ['龙胆泻肝颗粒'],
+                '黄连素': ['盐酸小檗碱', '黄连素片'],
+                '参苓白术散': ['参苓白术丸', '参苓白术颗粒'],
+                '健胃消食片': ['健胃消食颗粒'],
+                '保和丸': ['保和颗粒'],
+                '香砂养胃丸': ['香砂养胃颗粒'],
+                '附子理中丸': ['附子理中片'],
+                '玉屏风散': ['玉屏风颗粒', '玉屏风口服液'],
+                '川贝枇杷膏': ['川贝枇杷糖浆', '川贝枇杷颗粒'],
+                '急支糖浆': ['急支颗粒'],
+                '止咳糖浆': ['止咳颗粒'],
+                '小柴胡颗粒': ['小柴胡片', '小柴胡汤'],
+                '银翘解毒片': ['银翘解毒颗粒', '银翘解毒丸'],
+                '防风通圣丸': ['防风通圣颗粒'],
+                '牛黄清心丸': ['同仁牛黄清心丸'],
+                '苏合香丸': ['同仁苏合香丸'],
+                '再造丸': ['同仁再造丸'],
+                '乌鸡白凤丸': ['乌鸡白凤片', '乌鸡白凤颗粒'],
+                '益母草颗粒': ['益母草片', '益母草膏'],
+                '妇科千金片': ['妇科千金胶囊'],
+                '桂枝茯苓丸': ['桂枝茯苓胶囊'],
             },
 
             interactions: [
@@ -1402,76 +1439,288 @@
             document.getElementById('galleryInput').click();
         }
 
+        // 压缩图片到指定尺寸
+        function compressImage(file, maxSize) {
+            maxSize = maxSize || 600;
+            return new Promise(function(resolve) {
+                var imgEl = new Image();
+                imgEl.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var w = imgEl.width, h = imgEl.height;
+                    if (w > h) {
+                        if (w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
+                    } else {
+                        if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    URL.revokeObjectURL(imgEl.src);
+                };
+                imgEl.src = URL.createObjectURL(file);
+            });
+        }
+
         async function handleImage(event) {
-            const file = event.target.files[0];
+            var file = event.target.files[0];
             if (!file) return;
 
-            const preview = document.getElementById('ocrPreview');
-            const img = document.getElementById('ocrImage');
-            const ocrText = document.getElementById('ocrText');
-            const ocrDrugs = document.getElementById('ocrDrugs');
+            var preview = document.getElementById('ocrPreview');
+            var imgEl = document.getElementById('ocrImage');
+            var ocrText = document.getElementById('ocrText');
+            var ocrDrugs = document.getElementById('ocrDrugs');
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                img.src = e.target.result;
-                preview.classList.add('show');
-            };
-            reader.readAsDataURL(file);
+            showLoading('正在处理图片...');
 
-            ocrText.textContent = '正在识别药品信息...';
+            // 压缩图片到600px
+            var base64Data = await compressImage(file, 600);
+            imgEl.src = base64Data;
+            preview.classList.add('show');
+
+            ocrText.textContent = '正在识别药品...';
             ocrDrugs.innerHTML = '';
-            showLoading('正在识别中...');
+            document.getElementById('loadingText').textContent = '识别中...';
 
             try {
-                const result = await Tesseract.recognize(file, 'chi_sim+eng', {
-                    logger: function(m) {
-                        if (m.status === 'recognizing text') {
-                            document.getElementById('loadingText').textContent = '识别中... ' + Math.round(m.progress * 100) + '%';
-                        }
+                // 优先用 AI 视觉模型（如果已配置）
+                var config = getAiConfig();
+                var drugNames = [];
+
+                if (config.apiKey) {
+                    drugNames = await recognizeWithAI(base64Data, config);
+                }
+
+                // AI 未配置或未识别到，用免费 OCR 服务
+                if (drugNames.length === 0) {
+                    document.getElementById('loadingText').textContent = 'OCR识别中...';
+                    var ocrText2 = await ocrWithFreeAPI(base64Data);
+                    if (ocrText2) {
+                        drugNames = matchDrugsFromText(ocrText2);
                     }
-                });
+                }
 
                 hideLoading();
-                const text = result.data.text;
-                ocrText.textContent = '识别结果：' + text.substring(0, 200);
-
-                const foundDrugs = matchDrugsFromText(text);
-                
-                if (foundDrugs.length > 0) {
-                    let btns = '<span class="ocr-hint">识别到以下药品，点击添加：</span>';
-                    foundDrugs.forEach(function(name) {
-                        btns += '<button class="ocr-drug-btn" onclick="addDrug(\'' + name + '\')">' + name + '</button>';
+                if (drugNames && drugNames.length > 0) {
+                    ocrText.textContent = '识别完成';
+                    var btns = '<span class="ocr-hint">识别到以下药品，点击添加：</span>';
+                    drugNames.forEach(function(name) {
+                        btns += '<button class="ocr-drug-btn" onclick="addDrug(\'' + name.replace(/'/g, "\\'") + '\')">' + name + '</button>';
                     });
                     ocrDrugs.innerHTML = btns;
                 } else {
-                    ocrDrugs.innerHTML = '<span class="ocr-hint">未能自动匹配到已知药品名称，请尝试手动输入</span>';
+                    ocrText.textContent = '未能自动识别';
+                    ocrDrugs.innerHTML = '<span class="ocr-hint">未识别到药品名称，请直接在上方输入框手动输入药品名</span>';
                 }
-            } catch (error) {
+            } catch (err) {
                 hideLoading();
-                ocrText.textContent = '识别失败，请尝试重新拍照或手动输入药品名称';
-                console.error('OCR Error:', error);
+                console.error('[识别错误]', err);
+                ocrText.textContent = '识别失败';
+                ocrDrugs.innerHTML = '<span class="ocr-hint">请直接在上方输入框手动输入药品名称</span>';
             }
 
             event.target.value = '';
+        }
+
+        // 免费 OCR：使用 ocr.space 免费 API（无需注册，支持中文）
+        async function ocrWithFreeAPI(base64Data) {
+            var formData = new FormData();
+            formData.append('base64Image', base64Data);
+            formData.append('language', 'chs');
+            formData.append('isOverlayRequired', 'false');
+            formData.append('OCREngine', '2');
+
+            var response = await fetch('https://api.ocr.space/parse/image', {
+                method: 'POST',
+                headers: { 'apikey': 'K85403628988957' },
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('OCR服务请求失败');
+
+            var data = await response.json();
+            if (data.ParsedResults && data.ParsedResults.length > 0) {
+                var text = data.ParsedResults[0].ParsedText || '';
+                console.log('[OCR.space] 识别文字:', text.substring(0, 200));
+                return text;
+            }
+            return '';
+        }
+
+        // AI 视觉识别药品名称（配置了 API Key 时使用）
+        async function recognizeWithAI(base64Data, config) {
+            var provider = config.provider;
+            var prompt = '这是药品包装照片，请只输出药品名称，不要其他内容。如有多个药品用换行分隔。';
+            var url, headers, body;
+
+            var b64match = base64Data.match(/^data:(image\/[a-z]+);base64,(.+)$/);
+            if (!b64match) throw new Error('图片格式错误');
+            var mimeType = b64match[1];
+            var b64str = b64match[2];
+
+            if (provider === 'siliconflow') {
+                var baseUrl = config.baseUrl || 'https://api.siliconflow.cn';
+                var model = 'Qwen/Qwen2.5-VL-7B-Instruct';
+                url = baseUrl + '/v1/chat/completions';
+                headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config.apiKey };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'user', content: [
+                        { type: 'image_url', image_url: { url: base64Data } },
+                        { type: 'text', text: prompt }
+                    ]}],
+                    max_tokens: 100, temperature: 0.1
+                });
+            } else if (provider === 'openai') {
+                var baseUrl = config.baseUrl || 'https://api.openai.com';
+                var model = config.model || 'gpt-4o-mini';
+                url = baseUrl + '/v1/chat/completions';
+                headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config.apiKey };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'user', content: [
+                        { type: 'image_url', image_url: { url: base64Data, detail: 'low' } },
+                        { type: 'text', text: prompt }
+                    ]}],
+                    max_tokens: 100
+                });
+            } else if (provider === 'anthropic') {
+                var baseUrl = config.baseUrl || 'https://api.anthropic.com';
+                var model = config.model || 'claude-sonnet-4-20250514';
+                url = baseUrl + '/v1/messages';
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-api-key': config.apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true'
+                };
+                body = JSON.stringify({
+                    model: model, max_tokens: 100,
+                    messages: [{ role: 'user', content: [
+                        { type: 'image', source: { type: 'base64', media_type: mimeType, data: b64str } },
+                        { type: 'text', text: prompt }
+                    ]}]
+                });
+            } else if (provider === 'google') {
+                var baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com';
+                var model = config.model || 'gemini-2.0-flash';
+                url = baseUrl + '/v1beta/models/' + model + ':generateContent?key=' + config.apiKey;
+                headers = { 'Content-Type': 'application/json' };
+                body = JSON.stringify({
+                    contents: [{ parts: [
+                        { inline_data: { mime_type: mimeType, data: b64str } },
+                        { text: prompt }
+                    ]}],
+                    generationConfig: { maxOutputTokens: 100, temperature: 0.1 }
+                });
+            } else {
+                throw new Error('不支持的提供商');
+            }
+
+            var response = await fetch(url, { method: 'POST', headers: headers, body: body });
+            if (!response.ok) throw new Error('AI API错误(' + response.status + ')');
+
+            var data = await response.json();
+            var content = '';
+            if (provider === 'siliconflow' || provider === 'openai') {
+                content = data.choices[0].message.content;
+            } else if (provider === 'anthropic') {
+                content = data.content[0].text;
+            } else if (provider === 'google') {
+                content = data.candidates[0].content.parts[0].text;
+            }
+
+            console.log('[AI识别] 返回:', content);
+
+            if (!content || content.trim() === '无' || content.includes('无法') || content.includes('看不') || content.includes('不清楚')) {
+                return [];
+            }
+
+            var names = content.split(/[\n\r,，、;；\|]/)
+                .map(function(s) { return s.replace(/^[\d\.\-\*\#\s·•]+/, '').replace(/[。.!！？?]+$/, '').trim(); })
+                .filter(function(s) {
+                    return s.length >= 2 && s.length <= 20 && !/^(无|没有|未|不|图片|照片|这是|该|包装)/.test(s);
+                });
+
+            return names.slice(0, 5);
         }
 
         function matchDrugsFromText(text) {
             const found = [];
             const allNames = [];
 
+            // 建立别名 -> 通用名的映射
+            const aliasToGeneric = {};
             for (const [generic, brands] of Object.entries(drugDatabase.aliases)) {
+                aliasToGeneric[generic] = generic;
                 allNames.push(generic);
-                brands.forEach(b => allNames.push(b));
+                brands.forEach(function(b) {
+                    aliasToGeneric[b] = generic;
+                    allNames.push(b);
+                });
             }
 
+            // 按名称长度降序，优先匹配更长的名称
             allNames.sort(function(a, b) { return b.length - a.length; });
 
-            for (const name of allNames) {
-                if (name.length >= 2 && text.includes(name) && !found.includes(name)) {
+            // OCR 文字多种预处理版本：
+            // 去除所有空白字符（空格、换行、全角空格等）
+            var textClean = text.replace(/[\s\u3000\u200b\u200c\u200d\ufeff]/g, '');
+            // 只保留中文、英文、数字
+            var textPure = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+
+            console.log('[OCR匹配] 原始文字:', text.substring(0, 300));
+            console.log('[OCR匹配] 清洁文字:', textClean.substring(0, 300));
+            console.log('[OCR匹配] 纯净文字:', textPure.substring(0, 300));
+
+            var matchedGenerics = new Set();
+
+            for (var i = 0; i < allNames.length; i++) {
+                var name = allNames[i];
+                if (name.length < 2) continue;
+                var generic = aliasToGeneric[name];
+                if (matchedGenerics.has(generic)) continue;
+
+                // 在多种文字版本中尝试匹配
+                if (text.includes(name) || textClean.includes(name) || textPure.includes(name)) {
                     found.push(name);
+                    matchedGenerics.add(generic);
+                    console.log('[OCR匹配] 命中:', name, '-> 通用名:', generic);
                 }
             }
 
+            // 如果精确匹配没有结果，尝试更宽松的匹配：
+            // 药品名中的核心字符（去掉"丸""片""胶囊""颗粒"等剂型后缀）是否在文字中出现
+            if (found.length === 0) {
+                console.log('[OCR匹配] 精确匹配无结果，尝试模糊匹配...');
+                var suffixes = ['丸', '片', '胶囊', '颗粒', '口服液', '糖浆', '散', '膏', '滴丸', '注射液', '缓释片', '肠溶胶囊'];
+                for (var j = 0; j < allNames.length; j++) {
+                    var drugName = allNames[j];
+                    if (drugName.length < 3) continue;
+                    var gen = aliasToGeneric[drugName];
+                    if (matchedGenerics.has(gen)) continue;
+
+                    // 去掉剂型后缀得到核心名
+                    var core = drugName;
+                    for (var s = 0; s < suffixes.length; s++) {
+                        if (core.endsWith(suffixes[s])) {
+                            core = core.substring(0, core.length - suffixes[s].length);
+                            break;
+                        }
+                    }
+
+                    // 核心名至少2个字才做模糊匹配
+                    if (core.length >= 2 && (textClean.includes(core) || textPure.includes(core))) {
+                        found.push(drugName);
+                        matchedGenerics.add(gen);
+                        console.log('[OCR匹配] 模糊命中:', core, '-> 药品:', drugName, '-> 通用名:', gen);
+                    }
+
+                    if (found.length >= 5) break;
+                }
+            }
+
+            console.log('[OCR匹配] 最终结果:', found);
             return found.slice(0, 5);
         }
 
