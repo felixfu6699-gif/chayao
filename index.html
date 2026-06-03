@@ -1513,7 +1513,7 @@
         function getAiConfig() {
             const saved = localStorage.getItem('drugChecker_aiConfig');
             if (saved) return JSON.parse(saved);
-            return { provider: 'openai', apiKey: '', model: '', baseUrl: '' };
+            return { provider: 'siliconflow', apiKey: '', model: '', baseUrl: '' };
         }
 
         function saveAiConfig(config) {
@@ -1541,7 +1541,10 @@
             // 切换提供商时清空自定义值，避免残留错误地址
             modelInput.value = '';
             urlInput.value = '';
-            if (provider === 'openai') {
+            if (provider === 'siliconflow') {
+                modelInput.placeholder = 'Qwen/Qwen2.5-7B-Instruct（免费）';
+                urlInput.placeholder = 'https://api.siliconflow.cn（默认，无需修改）';
+            } else if (provider === 'openai') {
                 modelInput.placeholder = 'gpt-4o（默认）';
                 urlInput.placeholder = 'https://api.openai.com（默认）';
             } else if (provider === 'anthropic') {
@@ -1628,7 +1631,24 @@
             const provider = config.provider;
             let url, headers, body;
 
-            if (provider === 'openai') {
+            if (provider === 'siliconflow') {
+                const baseUrl = config.baseUrl || 'https://api.siliconflow.cn';
+                const model = config.model || 'Qwen/Qwen2.5-7B-Instruct';
+                url = `${baseUrl}/v1/chat/completions`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.apiKey}`
+                };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    temperature: 0.1,
+                    max_tokens: 4096
+                });
+            } else if (provider === 'openai') {
                 const baseUrl = config.baseUrl || 'https://api.openai.com';
                 const model = config.model || 'gpt-4o';
                 url = `${baseUrl}/v1/chat/completions`;
@@ -1682,7 +1702,7 @@
 
             const data = await response.json();
             let content = '';
-            if (provider === 'openai') {
+            if (provider === 'siliconflow' || provider === 'openai') {
                 content = data.choices[0].message.content;
             } else if (provider === 'anthropic') {
                 content = data.content[0].text;
@@ -1797,6 +1817,7 @@
             <div class="config-field">
                 <label>模型提供商</label>
                 <select id="cfgProvider" onchange="updateModelPlaceholder()">
+                    <option value="siliconflow">硅基流动 SiliconFlow（国内免费推荐）</option>
                     <option value="openai">OpenAI (GPT)</option>
                     <option value="anthropic">Anthropic (Claude)</option>
                     <option value="google">Google (Gemini)</option>
