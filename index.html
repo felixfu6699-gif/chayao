@@ -1542,7 +1542,7 @@
             modelInput.value = '';
             urlInput.value = '';
             if (provider === 'siliconflow') {
-                modelInput.placeholder = 'deepseek-ai/DeepSeek-V3（推荐）';
+                modelInput.placeholder = 'Qwen/Qwen2.5-72B-Instruct（免费快速）';
                 urlInput.placeholder = 'https://api.siliconflow.cn（默认，无需修改）';
             } else if (provider === 'openai') {
                 modelInput.placeholder = 'gpt-4o（默认）';
@@ -1635,7 +1635,7 @@
 
             if (provider === 'siliconflow') {
                 const baseUrl = config.baseUrl || 'https://api.siliconflow.cn';
-                const model = config.model || 'deepseek-ai/DeepSeek-V3';
+                const model = config.model || 'Qwen/Qwen2.5-72B-Instruct';
                 url = `${baseUrl}/v1/chat/completions`;
                 headers = {
                     'Content-Type': 'application/json',
