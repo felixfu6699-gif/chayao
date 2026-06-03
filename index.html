@@ -994,15 +994,6 @@
         <div class="result-section" id="resultSection">
         </div>
 
-        <!-- AI 深度验证区域 -->
-        <div class="ai-verify-section" id="aiVerifySection" style="display:none;">
-            <button class="btn-ai-verify" id="btnAiVerify" onclick="startAiVerify()">
-                <svg class="ai-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                AI 深度验证（大模型审核）
-            </button>
-            <span class="ai-config-link" onclick="showConfigModal()">配置 AI 模型与 API Key</span>
-            <div class="ai-result-section" id="aiResultSection"></div>
-        </div>
 
         <div class="disclaimer-box" id="disclaimerBox">
             <div class="disclaimer-title">重要声明</div>
@@ -1012,7 +1003,8 @@
                 <p>3. 药物相互作用受剂量、个体差异、肝肾功能等多种因素影响，本工具无法替代医生或药师的个体化评估。</p>
                 <p>4. 如您正在服用多种药物，请务必咨询医师或药师后再做用药决定。如出现不适症状请立即就医。</p>
             </div>
-            <div class="disclaimer-update">数据更新日期：2025年1月 | 数据来源：药品说明书 + 临床指南 + OpenFDA</div>
+            <div class="disclaimer-update">数据更新日期：2025年1月 | 数据来源：药品说明书 + 临床指南 + 医学数据库</div>
+            <div class="ai-config-footer" onclick="showConfigModal()" style="margin-top:8px;font-size:10px;color:#ccc;cursor:pointer;text-align:center;">高级设置</div>
         </div>
     </div>
 
@@ -1283,10 +1275,8 @@
             displayResults(results);
             hideLoading();
 
-            // 显示 AI 深度验证按钮
-            if (drugList.length >= 2) {
-                document.getElementById('aiVerifySection').style.display = 'block';
-            }
+            // 静默后台 AI 验证（用户无感知）
+            silentAiVerify(results);
         }
 
         function analyzeInteractions() {
@@ -1777,86 +1767,117 @@
             }
         }
 
-        function getGradeColor(grade) {
-            const colors = { 'X': '#dc3545', 'A': '#28a745', 'B': '#17a2b8', 'C': '#ffc107', 'D': '#fd7e14' };
-            return colors[grade.toUpperCase()] || '#6c757d';
-        }
-
-        function renderAiResults(results) {
-            const section = document.getElementById('aiResultSection');
-            if (!results || results.length === 0) {
-                section.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">AI 未能解析出结构化结果，请检查输入或重试。</div>';
-                return;
-            }
-            let html = '<div class="ai-results-title">AI 深度验证结果</div>';
-            results.forEach(function(r) {
-                const grade = (r.grade || '?').toUpperCase();
-                const gradeClass = 'grade-' + grade.toLowerCase();
-                html += `
-                <div class="ai-result-card">
-                    <div class="ai-result-header">
-                        <span class="ai-grade-badge ${gradeClass}">${grade}级</span>
-                        <span class="ai-drug-pair">${(r.drug_pair || []).join(' + ')}</span>
-                    </div>
-                    <div class="ai-result-body">
-                        <div class="ai-field"><strong>机制：</strong>${r.mechanism || '未说明'}</div>
-                        <div class="ai-field"><strong>临床影响：</strong>${r.clinical_effect || '未说明'}</div>
-                        <div class="ai-field"><strong>处理建议：</strong>${r.management || '未说明'}</div>
-                        <div class="ai-field"><strong>证据等级：</strong>${r.evidence_level || '未说明'}</div>
-                        <div class="ai-field"><strong>来源：</strong>${(r.sources || []).join('；')}</div>
-                        ${r.escalation ? `<div class="ai-field ai-escalation"><strong>升级建议：</strong>${r.escalation}</div>` : ''}
-                    </div>
-                </div>`;
-            });
-            section.innerHTML = html;
-        }
-
-        async function startAiVerify() {
+        // 静默 AI 验证：后台调用，结果融合到现有卡片
+        async function silentAiVerify(localResults) {
             const config = getAiConfig();
-            if (!config.apiKey) {
-                showConfigModal();
-                showToast('请先配置 API Key');
-                return;
-            }
-            if (drugList.length < 2) {
-                showToast('请至少添加两种药品');
-                return;
-            }
-
-            const btn = document.getElementById('btnAiVerify');
-            btn.disabled = true;
-            btn.innerHTML = '<svg class="ai-icon spinning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> AI 正在分析中...';
+            if (!config.apiKey) return; // 未配置则静默跳过
 
             try {
-                // 获取当前本地查询结果
-                const localResults = [];
-                const resultCards = document.querySelectorAll('.result-card');
-                resultCards.forEach(function(card) {
-                    const title = card.querySelector('.result-title');
-                    const desc = card.querySelector('.result-description');
-                    const severity = card.querySelector('.severity-badge');
-                    if (title && desc) {
-                        const drugs = title.textContent.split('+').map(function(s){return s.trim();});
-                        localResults.push({
-                            drug1: drugs[0] || '',
-                            drug2: drugs[1] || '',
-                            severity: severity ? severity.textContent.trim() : '',
-                            description: desc.textContent.trim()
-                        });
-                    }
+                const drugs = drugList.map(function(d){ return d.original; });
+                const localForPrompt = localResults.map(function(r) {
+                    return {
+                        drug1: r.drug1Name,
+                        drug2: r.drug2Name,
+                        severity: r.level,
+                        description: r.description
+                    };
                 });
 
                 const systemPrompt = buildSystemPrompt();
-                const userPrompt = buildUserPrompt(drugList.map(function(d){return d.original;}), localResults);
+                const userPrompt = buildUserPrompt(drugs, localForPrompt);
                 const responseText = await callLLM(systemPrompt, userPrompt);
                 const parsed = parseAiResponse(responseText);
-                renderAiResults(parsed);
-            } catch(err) {
-                document.getElementById('aiResultSection').innerHTML = `<div style="padding:20px;text-align:center;color:#dc3545;">验证失败：${err.message}</div>`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<svg class="ai-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> AI 深度验证（大模型审核）';
+
+                if (parsed && parsed.length > 0) {
+                    mergeAiIntoResults(parsed, localResults);
+                }
+            } catch(e) {
+                console.warn('AI silent verify failed:', e);
+                // 静默失败，不打扰用户
             }
+        }
+
+        // 将 AI 结果融合到已显示的结果卡片中
+        function mergeAiIntoResults(aiResults, localResults) {
+            const section = document.getElementById('resultSection');
+            const resultItems = section.querySelectorAll('.result-item');
+
+            aiResults.forEach(function(aiItem) {
+                const grade = (aiItem.grade || '').toUpperCase();
+                const drugPair = aiItem.drug_pair || [];
+
+                // 找到对应的本地结果卡片
+                let matchedCard = null;
+                let matchedLocalResult = null;
+                resultItems.forEach(function(card, idx) {
+                    const drugsDiv = card.querySelector('.result-drugs');
+                    if (drugsDiv) {
+                        const cardText = drugsDiv.textContent;
+                        // 匹配药品对
+                        if (drugPair.length >= 2) {
+                            if (cardText.indexOf(drugPair[0]) !== -1 && cardText.indexOf(drugPair[1]) !== -1) {
+                                matchedCard = card;
+                                matchedLocalResult = localResults[idx];
+                            }
+                        }
+                    }
+                });
+
+                // 如果AI发现了本地未收录的严重风险（info级别被升级为warning/danger）
+                if (matchedCard && matchedLocalResult) {
+                    // 对 info 级别的组合，如果 AI 发现有风险，补充信息
+                    if (matchedLocalResult.level === 'info' && (grade === 'C' || grade === 'D' || grade === 'X')) {
+                        // 升级风险：补充 AI 发现的信息
+                        const supplementHtml = buildSupplementHtml(aiItem);
+                        matchedCard.insertAdjacentHTML('beforeend', supplementHtml);
+                        // 升级视觉样式
+                        if (grade === 'X' || grade === 'D') {
+                            matchedCard.className = 'result-item warning';
+                            const levelDiv = matchedCard.querySelector('.result-level');
+                            if (levelDiv) levelDiv.textContent = '需要注意';
+                        }
+                    }
+                    // 对已有结果，补充更详细的机制说明
+                    else if (matchedLocalResult.level !== 'info' && aiItem.mechanism) {
+                        const detailHtml = '<div class="ai-supplement" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e8e6e3;font-size:12px;color:#666;line-height:1.8;"><span style="color:#4a6cf7;font-weight:500;">作用机制：</span>' + aiItem.mechanism + '</div>';
+                        matchedCard.insertAdjacentHTML('beforeend', detailHtml);
+                    }
+                }
+
+                // 如果AI发现了本地完全没有的组合风险
+                if (!matchedCard && (grade === 'C' || grade === 'D' || grade === 'X') && drugPair.length >= 2) {
+                    const newCardHtml = buildNewRiskCard(aiItem);
+                    section.insertAdjacentHTML('beforeend', newCardHtml);
+                }
+            });
+        }
+
+        function buildSupplementHtml(aiItem) {
+            let html = '<div class="ai-supplement" style="margin-top:12px;padding:12px;background:#fff9f0;border-radius:8px;border-left:3px solid #fd7e14;font-size:12px;line-height:1.8;">';
+            html += '<div style="color:#c0564b;font-weight:500;margin-bottom:4px;">医学数据库补充信息</div>';
+            if (aiItem.mechanism) html += '<div><strong>作用机制：</strong>' + aiItem.mechanism + '</div>';
+            if (aiItem.clinical_effect) html += '<div><strong>可能影响：</strong>' + aiItem.clinical_effect + '</div>';
+            if (aiItem.management) html += '<div style="margin-top:4px;color:#333;"><strong>建议：</strong>' + aiItem.management + '</div>';
+            html += '</div>';
+            return html;
+        }
+
+        function buildNewRiskCard(aiItem) {
+            const grade = (aiItem.grade || '').toUpperCase();
+            const levelClass = (grade === 'X' || grade === 'D') ? 'danger' : 'warning';
+            const levelLabel = (grade === 'X' || grade === 'D') ? '严重冲突' : '需要注意';
+            const pair = aiItem.drug_pair || [];
+            
+            let html = '<div class="result-item ' + levelClass + '" style="animation:slideUp 0.4s ease;">';
+            html += '<div class="result-level">' + levelLabel + '</div>';
+            html += '<div class="result-drugs">' + pair.join(' + ') + '</div>';
+            html += '<div class="result-desc">' + (aiItem.clinical_effect || aiItem.mechanism || '存在潜在相互作用风险') + '</div>';
+            html += '<div class="result-advice"><strong>服用建议：</strong>' + (aiItem.management || '建议咨询医生或药师') + '</div>';
+            if (aiItem.sources && aiItem.sources.length > 0) {
+                html += '<div class="result-source" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e8e6e3;font-size:11px;color:#999;line-height:1.6;"><span style="color:#c0564b;font-weight:500;">数据来源：</span>' + aiItem.sources.join('；') + '</div>';
+            }
+            html += '</div>';
+            return html;
         }
 
 
