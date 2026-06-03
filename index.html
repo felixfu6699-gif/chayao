@@ -1542,7 +1542,7 @@
             modelInput.value = '';
             urlInput.value = '';
             if (provider === 'siliconflow') {
-                modelInput.placeholder = 'Qwen/Qwen2.5-7B-Instruct（免费）';
+                modelInput.placeholder = 'deepseek-ai/DeepSeek-V3（推荐）';
                 urlInput.placeholder = 'https://api.siliconflow.cn（默认，无需修改）';
             } else if (provider === 'openai') {
                 modelInput.placeholder = 'gpt-4o（默认）';
@@ -1605,7 +1605,9 @@
 禁止行为：
 - 不回答超出药物相互作用范围的问题
 - 不编造证据来源
-- 不给出模糊或无分级的结论`;
+- 不给出模糊或无分级的结论
+
+重要：你必须且只能输出JSON格式的结果，不要输出任何解释性文字。如果有多对药物组合，输出JSON数组。直接以 [ 或 { 开头输出。`;
         }
 
         function buildUserPrompt(drugs, localResults) {
@@ -1633,7 +1635,7 @@
 
             if (provider === 'siliconflow') {
                 const baseUrl = config.baseUrl || 'https://api.siliconflow.cn';
-                const model = config.model || 'Qwen/Qwen2.5-7B-Instruct';
+                const model = config.model || 'deepseek-ai/DeepSeek-V3';
                 url = `${baseUrl}/v1/chat/completions`;
                 headers = {
                     'Content-Type': 'application/json',
@@ -1713,15 +1715,65 @@
         }
 
         function parseAiResponse(text) {
-            // 尝试提取 JSON
-            let jsonStr = text;
-            const jsonMatch = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\[[\s\S]*\])/) || text.match(/(\{[\s\S]*\})/);
-            if (jsonMatch) jsonStr = jsonMatch[1];
+            if (!text || text.trim().length === 0) return null;
+
+            // 多种方式尝试提取 JSON
+            let jsonStr = '';
+
+            // 方式1: ```json ... ```
+            const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+            if (codeBlockMatch) jsonStr = codeBlockMatch[1].trim();
+
+            // 方式2: 直接找数组
+            if (!jsonStr) {
+                const arrMatch = text.match(/(\[\s*\{[\s\S]*\}\s*\])/);
+                if (arrMatch) jsonStr = arrMatch[1];
+            }
+
+            // 方式3: 找单个对象
+            if (!jsonStr) {
+                const objMatch = text.match(/(\{[\s\S]*?"grade"[\s\S]*?\})/);
+                if (objMatch) jsonStr = objMatch[1];
+            }
+
+            // 方式4: 找所有 JSON 对象
+            if (!jsonStr) {
+                const allObjs = text.match(/\{[^{}]*"grade"[^{}]*\}/g);
+                if (allObjs && allObjs.length > 0) {
+                    jsonStr = '[' + allObjs.join(',') + ']';
+                }
+            }
+
+            if (!jsonStr) {
+                // 方式5: 如果完全无法解析JSON，尝试从文本中提取关键信息
+                const gradeMatch = text.match(/([XABCD])级/);
+                if (gradeMatch) {
+                    return [{
+                        grade: gradeMatch[1],
+                        drug_pair: [],
+                        mechanism: text.substring(0, 200),
+                        clinical_effect: '',
+                        management: '',
+                        evidence_level: '',
+                        sources: [],
+                        escalation: ''
+                    }];
+                }
+                return null;
+            }
+
             try {
                 const parsed = JSON.parse(jsonStr);
                 return Array.isArray(parsed) ? parsed : [parsed];
             } catch(e) {
-                return null;
+                // JSON修复：尝试去掉尾部多余逗号
+                try {
+                    const fixed = jsonStr.replace(/,\s*([\]\}])/g, '$1');
+                    const parsed2 = JSON.parse(fixed);
+                    return Array.isArray(parsed2) ? parsed2 : [parsed2];
+                } catch(e2) {
+                    return null;
+                }
             }
         }
 
