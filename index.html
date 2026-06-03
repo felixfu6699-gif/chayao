@@ -1282,6 +1282,11 @@
 
             displayResults(results);
             hideLoading();
+
+            // 显示 AI 深度验证按钮
+            if (drugList.length >= 2) {
+                document.getElementById('aiVerifySection').style.display = 'block';
+            }
         }
 
         function analyzeInteractions() {
@@ -1738,7 +1743,7 @@
                 showToast('请先配置 API Key');
                 return;
             }
-            if (selectedDrugs.length < 2) {
+            if (drugList.length < 2) {
                 showToast('请至少添加两种药品');
                 return;
             }
@@ -1767,7 +1772,7 @@
                 });
 
                 const systemPrompt = buildSystemPrompt();
-                const userPrompt = buildUserPrompt(selectedDrugs, localResults);
+                const userPrompt = buildUserPrompt(drugList.map(function(d){return d.original;}), localResults);
                 const responseText = await callLLM(systemPrompt, userPrompt);
                 const parsed = parseAiResponse(responseText);
                 renderAiResults(parsed);
@@ -1779,14 +1784,6 @@
             }
         }
 
-        // 在 checkInteractions 完成后显示 AI 验证按钮
-        const origDisplayResults = displayResults;
-        displayResults = function(results) {
-            origDisplayResults(results);
-            if (selectedDrugs.length >= 2) {
-                document.getElementById('aiVerifySection').style.display = 'block';
-            }
-        };
 
     </script>
 
