@@ -1030,8 +1030,8 @@
                 '奥美拉唑': ['洛赛克', '奥美拉唑肠溶胶囊'],
                 '雷贝拉唑': ['波利特', '瑞波特'],
                 '蒙脱石散': ['思密达', '必奇'],
-                '藿香正气水': ['藿香正气液', '藿香正气口服液'],
-                '连花清瘟': ['连花清瘟胶囊', '连花清瘟颗粒'],
+                '藿香正气水': ['藿香正气液', '藿香正气口服液', '藿香正气胶囊', '藿香正气丸', '藿香正气滴丸', '太极藿香正气口服液'],
+                '连花清瘟': ['连花清瘟胶囊', '连花清瘟颗粒', '莲花清瘟', '莲花清瘟胶囊', '莲花清瘟颗粒'],
                 '感冒灵': ['感冒灵颗粒', '999感冒灵'],
                 '板蓝根': ['板蓝根颗粒'],
                 '双黄连': ['双黄连口服液'],
@@ -1108,6 +1108,29 @@
                 '益母草颗粒': ['益母草片', '益母草膏'],
                 '妇科千金片': ['妇科千金胶囊'],
                 '桂枝茯苓丸': ['桂枝茯苓胶囊'],
+                '氨咖黄敏胶囊': ['速效伤风胶囊', '速效感冒胶囊'],
+                '复方氨酚烷胺': ['快克', '感康'],
+                '酚麻美敏': ['泰诺感冒片', '日夜感冒片'],
+                '氨麻美敏': ['新康泰克', '白加黑'],
+                '复方甘草片': ['甘草片'],
+                '蒲地蓝消炎': ['蒲地蓝消炎口服液', '蒲地蓝消炎片'],
+                '清开灵': ['清开灵颗粒', '清开灵胶囊', '清开灵口服液'],
+                '风油精': ['清凉油', '万金油'],
+                '马应龙': ['马应龙痔疮膏', '马应龙麝香痔疮膏'],
+                '开塞露': ['甘油灌肠剂'],
+                '创可贴': ['邦迪', '云南白药创可贴'],
+                '红霉素软膏': ['红霉素眼膏'],
+                '双氯芬酸': ['扶他林', '英太青', '双氯芬酸钠'],
+                '吲哚美辛': ['消炎痛', '吲哚美辛肠溶片'],
+                '萘普生': ['消痛灵', '萘普生钠'],
+                '氨基葡萄糖': ['维骨力', '葡立', '氨糖'],
+                '脑心通胶囊': ['脑心通', '步长脑心通'],
+                '血塞通': ['血塞通片', '血塞通胶囊', '注射用血塞通'],
+                '丹红注射液': ['丹红'],
+                '黄芪颗粒': ['黄芪片', '黄芪口服液'],
+                '当归': ['当归片', '当归补血颗粒'],
+                '枸杞': ['枸杞子', '杞菊地黄丸'],
+                '三黄片': ['三黄胶囊'],
             },
 
             interactions: [
@@ -1441,7 +1464,7 @@
 
         // 压缩图片到指定尺寸
         function compressImage(file, maxSize) {
-            maxSize = maxSize || 600;
+            maxSize = maxSize || 1200;
             return new Promise(function(resolve) {
                 var imgEl = new Image();
                 imgEl.onload = function() {
@@ -1455,7 +1478,7 @@
                     canvas.width = w;
                     canvas.height = h;
                     canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
-                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
                     URL.revokeObjectURL(imgEl.src);
                 };
                 imgEl.src = URL.createObjectURL(file);
@@ -1473,8 +1496,8 @@
 
             showLoading('正在处理图片...');
 
-            // 压缩图片到600px
-            var base64Data = await compressImage(file, 600);
+            // 压缩图片到1200px（提高OCR精度）
+            var base64Data = await compressImage(file, 1200);
             imgEl.src = base64Data;
             preview.classList.add('show');
 
@@ -1489,15 +1512,16 @@
 
                 if (config.apiKey) {
                     drugNames = await recognizeWithAI(base64Data, config);
+                    // AI返回的名称也尝试映射到数据库
+                    if (drugNames.length > 0) {
+                        drugNames = mapAiResultsToDatabase(drugNames);
+                    }
                 }
 
-                // AI 未配置或未识别到，用免费 OCR 服务
+                // AI 未配置或未识别到，用多引擎 OCR + 智能匹配
                 if (drugNames.length === 0) {
                     document.getElementById('loadingText').textContent = 'OCR识别中...';
-                    var ocrText2 = await ocrWithFreeAPI(base64Data);
-                    if (ocrText2) {
-                        drugNames = matchDrugsFromText(ocrText2);
-                    }
+                    drugNames = await multiEngineOCR(base64Data);
                 }
 
                 hideLoading();
@@ -1522,13 +1546,71 @@
             event.target.value = '';
         }
 
+        // AI 结果映射到数据库中的药品名
+        function mapAiResultsToDatabase(aiNames) {
+            var results = [];
+            var matchedGenerics = new Set();
+            for (var i = 0; i < aiNames.length; i++) {
+                var name = aiNames[i];
+                // 先尝试精确匹配
+                var generic = normalizeDrugName(name);
+                if (generic && !matchedGenerics.has(generic)) {
+                    results.push(generic);
+                    matchedGenerics.add(generic);
+                    continue;
+                }
+                // 再尝试模糊匹配
+                var fuzzyResult = fuzzyMatchDrug(name);
+                if (fuzzyResult && !matchedGenerics.has(fuzzyResult)) {
+                    results.push(fuzzyResult);
+                    matchedGenerics.add(fuzzyResult);
+                } else if (!generic) {
+                    // AI返回的名字不在数据库中，但可能是有效药名，直接保留
+                    results.push(name);
+                }
+            }
+            return results;
+        }
+
+        // 多引擎 OCR：同时使用 Engine 1 和 Engine 2，合并结果
+        async function multiEngineOCR(base64Data) {
+            var allText = '';
+            var results = [];
+
+            // 并行请求两个引擎
+            var [text1, text2] = await Promise.allSettled([
+                ocrWithFreeAPI(base64Data, '1'),
+                ocrWithFreeAPI(base64Data, '2')
+            ]);
+
+            var ocrTexts = [];
+            if (text1.status === 'fulfilled' && text1.value) ocrTexts.push(text1.value);
+            if (text2.status === 'fulfilled' && text2.value) ocrTexts.push(text2.value);
+
+            console.log('[多引擎OCR] 引擎1:', text1.status === 'fulfilled' ? (text1.value || '').substring(0, 100) : 'failed');
+            console.log('[多引擎OCR] 引擎2:', text2.status === 'fulfilled' ? (text2.value || '').substring(0, 100) : 'failed');
+
+            // 合并所有OCR文字
+            allText = ocrTexts.join('\n');
+
+            if (allText) {
+                results = matchDrugsFromText(allText);
+            }
+
+            return results;
+        }
+
         // 免费 OCR：使用 ocr.space 免费 API（无需注册，支持中文）
-        async function ocrWithFreeAPI(base64Data) {
+        async function ocrWithFreeAPI(base64Data, engine) {
+            engine = engine || '2';
             var formData = new FormData();
             formData.append('base64Image', base64Data);
             formData.append('language', 'chs');
             formData.append('isOverlayRequired', 'false');
-            formData.append('OCREngine', '2');
+            formData.append('OCREngine', engine);
+            formData.append('scale', 'true');
+            formData.append('isTable', 'false');
+            formData.append('detectOrientation', 'true');
 
             var response = await fetch('https://api.ocr.space/parse/image', {
                 method: 'POST',
@@ -1541,7 +1623,7 @@
             var data = await response.json();
             if (data.ParsedResults && data.ParsedResults.length > 0) {
                 var text = data.ParsedResults[0].ParsedText || '';
-                console.log('[OCR.space] 识别文字:', text.substring(0, 200));
+                console.log('[OCR.space Engine' + engine + '] 识别文字:', text.substring(0, 200));
                 return text;
             }
             return '';
@@ -1645,6 +1727,97 @@
             return names.slice(0, 5);
         }
 
+        // 常见厂商/品牌前缀（OCR文字中药品名前面可能带这些）
+        const BRAND_PREFIXES = [
+            '同仁堂', '北京同仁堂', '云南白药', '片仔癀', '东阿', '太极',
+            '修正', '仁和', '葵花', '哈药', '三九', '999', '江中',
+            '以岭', '步长', '天士力', '白云山', '广药', '康恩贝',
+            '汤臣倍健', '国药', '华润', '中美', '拜耳', '辉瑞',
+            '中华', '南京', '广州', '上海', '杭州', '天津', '吉林',
+            '河南', '山东', '四川', '贵州', '昆明', '长春'
+        ];
+
+        // 剂型后缀
+        const DOSAGE_SUFFIXES = [
+            '缓释胶囊', '肠溶胶囊', '肠溶片', '缓释片', '分散片', '咀嚼片',
+            '泡腾片', '含片', '舌下片', '控释片', '薄膜衣片',
+            '口服液', '合剂', '口服溶液', '混悬液', '糖浆', '颗粒',
+            '胶囊', '软胶囊', '滴丸', '注射液', '滴眼液', '喷雾剂',
+            '气雾剂', '贴膏', '软膏', '乳膏', '凝胶', '搽剂', '酊剂',
+            '丸', '片', '散', '膏', '丹', '露', '茶', '酒'
+        ];
+
+        // 模糊匹配单个药名（用于 AI 结果匹配和高级搜索）
+        function fuzzyMatchDrug(inputName) {
+            if (!inputName || inputName.length < 2) return null;
+
+            // 去掉前缀和后缀
+            var cleaned = inputName;
+            for (var p = 0; p < BRAND_PREFIXES.length; p++) {
+                if (cleaned.startsWith(BRAND_PREFIXES[p])) {
+                    cleaned = cleaned.substring(BRAND_PREFIXES[p].length);
+                    break;
+                }
+            }
+            for (var s = 0; s < DOSAGE_SUFFIXES.length; s++) {
+                if (cleaned.endsWith(DOSAGE_SUFFIXES[s])) {
+                    cleaned = cleaned.substring(0, cleaned.length - DOSAGE_SUFFIXES[s].length);
+                    break;
+                }
+            }
+
+            if (cleaned.length < 2) cleaned = inputName;
+
+            // 在所有药名中找最佳匹配
+            var bestMatch = null;
+            var bestScore = 0;
+
+            for (var [generic, brands] of Object.entries(drugDatabase.aliases)) {
+                var candidates = [generic].concat(brands);
+                for (var c = 0; c < candidates.length; c++) {
+                    var candidate = candidates[c];
+                    // 包含关系
+                    if (cleaned.includes(candidate) || candidate.includes(cleaned)) {
+                        var score = Math.min(cleaned.length, candidate.length) / Math.max(cleaned.length, candidate.length);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = generic;
+                        }
+                    }
+                    // 编辑距离（仅对短名称）
+                    if (cleaned.length <= 6 && candidate.length <= 6) {
+                        var dist = editDistance(cleaned, candidate);
+                        var maxLen = Math.max(cleaned.length, candidate.length);
+                        var similarity = 1 - dist / maxLen;
+                        if (similarity > 0.6 && similarity > bestScore) {
+                            bestScore = similarity;
+                            bestMatch = generic;
+                        }
+                    }
+                }
+            }
+
+            return bestScore >= 0.5 ? bestMatch : null;
+        }
+
+        // 编辑距离算法
+        function editDistance(a, b) {
+            var m = a.length, n = b.length;
+            var dp = Array(m + 1).fill(null).map(function() { return Array(n + 1).fill(0); });
+            for (var i = 0; i <= m; i++) dp[i][0] = i;
+            for (var j = 0; j <= n; j++) dp[0][j] = j;
+            for (var i = 1; i <= m; i++) {
+                for (var j = 1; j <= n; j++) {
+                    dp[i][j] = Math.min(
+                        dp[i-1][j] + 1,
+                        dp[i][j-1] + 1,
+                        dp[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)
+                    );
+                }
+            }
+            return dp[m][n];
+        }
+
         function matchDrugsFromText(text) {
             const found = [];
             const allNames = [];
@@ -1663,60 +1836,115 @@
             // 按名称长度降序，优先匹配更长的名称
             allNames.sort(function(a, b) { return b.length - a.length; });
 
-            // OCR 文字多种预处理版本：
-            // 去除所有空白字符（空格、换行、全角空格等）
+            // OCR 文字多种预处理版本
             var textClean = text.replace(/[\s\u3000\u200b\u200c\u200d\ufeff]/g, '');
-            // 只保留中文、英文、数字
             var textPure = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+            // 额外：去掉所有常见厂商前缀后的文字
+            var textNoBrand = textPure;
+            for (var p = 0; p < BRAND_PREFIXES.length; p++) {
+                textNoBrand = textNoBrand.split(BRAND_PREFIXES[p]).join('');
+            }
 
             console.log('[OCR匹配] 原始文字:', text.substring(0, 300));
-            console.log('[OCR匹配] 清洁文字:', textClean.substring(0, 300));
             console.log('[OCR匹配] 纯净文字:', textPure.substring(0, 300));
 
             var matchedGenerics = new Set();
 
+            // === 第一轮：精确子串匹配 ===
             for (var i = 0; i < allNames.length; i++) {
                 var name = allNames[i];
                 if (name.length < 2) continue;
                 var generic = aliasToGeneric[name];
                 if (matchedGenerics.has(generic)) continue;
 
-                // 在多种文字版本中尝试匹配
                 if (text.includes(name) || textClean.includes(name) || textPure.includes(name)) {
-                    found.push(name);
+                    found.push(generic);
                     matchedGenerics.add(generic);
-                    console.log('[OCR匹配] 命中:', name, '-> 通用名:', generic);
+                    console.log('[OCR匹配] 精确命中:', name, '-> 通用名:', generic);
                 }
             }
 
-            // 如果精确匹配没有结果，尝试更宽松的匹配：
-            // 药品名中的核心字符（去掉"丸""片""胶囊""颗粒"等剂型后缀）是否在文字中出现
+            // === 第二轮：去掉剂型后缀的核心名匹配 ===
             if (found.length === 0) {
-                console.log('[OCR匹配] 精确匹配无结果，尝试模糊匹配...');
-                var suffixes = ['丸', '片', '胶囊', '颗粒', '口服液', '糖浆', '散', '膏', '滴丸', '注射液', '缓释片', '肠溶胶囊'];
+                console.log('[OCR匹配] 尝试核心名匹配...');
                 for (var j = 0; j < allNames.length; j++) {
                     var drugName = allNames[j];
                     if (drugName.length < 3) continue;
                     var gen = aliasToGeneric[drugName];
                     if (matchedGenerics.has(gen)) continue;
 
-                    // 去掉剂型后缀得到核心名
                     var core = drugName;
-                    for (var s = 0; s < suffixes.length; s++) {
-                        if (core.endsWith(suffixes[s])) {
-                            core = core.substring(0, core.length - suffixes[s].length);
+                    for (var s = 0; s < DOSAGE_SUFFIXES.length; s++) {
+                        if (core.endsWith(DOSAGE_SUFFIXES[s])) {
+                            core = core.substring(0, core.length - DOSAGE_SUFFIXES[s].length);
                             break;
                         }
                     }
 
-                    // 核心名至少2个字才做模糊匹配
-                    if (core.length >= 2 && (textClean.includes(core) || textPure.includes(core))) {
-                        found.push(drugName);
+                    if (core.length >= 2 && (textClean.includes(core) || textPure.includes(core) || textNoBrand.includes(core))) {
+                        found.push(gen);
                         matchedGenerics.add(gen);
-                        console.log('[OCR匹配] 模糊命中:', core, '-> 药品:', drugName, '-> 通用名:', gen);
+                        console.log('[OCR匹配] 核心名命中:', core, '-> 通用名:', gen);
                     }
 
                     if (found.length >= 5) break;
+                }
+            }
+
+            // === 第三轮：逐行分析 + 编辑距离模糊匹配 ===
+            if (found.length === 0) {
+                console.log('[OCR匹配] 尝试逐行模糊匹配...');
+                var lines = text.split(/[\n\r]+/);
+                for (var li = 0; li < lines.length; li++) {
+                    var line = lines[li].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+                    if (line.length < 2 || line.length > 30) continue;
+
+                    // 去掉厂商前缀
+                    var lineClean = line;
+                    for (var p2 = 0; p2 < BRAND_PREFIXES.length; p2++) {
+                        if (lineClean.startsWith(BRAND_PREFIXES[p2])) {
+                            lineClean = lineClean.substring(BRAND_PREFIXES[p2].length);
+                            break;
+                        }
+                    }
+
+                    // 对这行文字尝试模糊匹配
+                    var fuzzyResult = fuzzyMatchDrug(lineClean);
+                    if (fuzzyResult && !matchedGenerics.has(fuzzyResult)) {
+                        found.push(fuzzyResult);
+                        matchedGenerics.add(fuzzyResult);
+                        console.log('[OCR匹配] 模糊命中:', lineClean, '-> 通用名:', fuzzyResult);
+                    }
+
+                    if (found.length >= 5) break;
+                }
+            }
+
+            // === 第四轮：在整段文字中滑动窗口查找药名 ===
+            if (found.length === 0) {
+                console.log('[OCR匹配] 尝试滑动窗口匹配...');
+                var pureText = textPure;
+                for (var winSize = 7; winSize >= 2; winSize--) {
+                    for (var pos = 0; pos <= pureText.length - winSize; pos++) {
+                        var window = pureText.substring(pos, pos + winSize);
+                        // 检查这个窗口是否匹配某个药名
+                        for (var k = 0; k < allNames.length; k++) {
+                            var drugN = allNames[k];
+                            var genN = aliasToGeneric[drugN];
+                            if (matchedGenerics.has(genN)) continue;
+                            if (drugN.length < 2) continue;
+
+                            // 窗口包含药名或药名包含窗口（且相似度高）
+                            if (window === drugN || (window.length >= 3 && drugN.includes(window) && window.length >= drugN.length - 1)) {
+                                found.push(genN);
+                                matchedGenerics.add(genN);
+                                console.log('[OCR匹配] 窗口命中:', window, '-> 药品:', drugN, '-> 通用名:', genN);
+                                break;
+                            }
+                        }
+                        if (found.length >= 5) break;
+                    }
+                    if (found.length > 0) break;
                 }
             }
 
