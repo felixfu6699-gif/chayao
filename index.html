@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>药品相互作用查询</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif;
+            background: #ffffff;
+            color: #2c2c2c;
+            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .header {
+            width: 100%;
+            padding: 48px 24px 32px;
+            text-align: center;
+            border-bottom: 1px solid #f0eeec;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: #2c2c2c;
+            margin-bottom: 12px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .header h1::after {
+            display: none;
+        }
+
+        .header p {
+            font-size: 12px;
+            font-weight: 300;
+            color: #999;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .input-section {
+            margin-bottom: 32px;
+        }
+
+        .section-label {
+            font-size: 15px;
+            font-weight: 400;
+            color: #2c2c2c;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-label .capsule {
+            display: inline-block;
+            width: 18px;
+            height: 9px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #c0564b 50%, #f5e6d0 50%);
+            border: 1px solid #e0dedc;
+            position: relative;
+            top: 0px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .drug-input {
+            flex: 1;
+            height: 48px;
+            border: none;
+            border-bottom: 1px solid #e0dedc;
+            padding: 0 4px;
+            font-size: 16px;
+            font-weight: 300;
+            color: #2c2c2c;
+            background: transparent;
+            outline: none;
+            transition: border-color 0.3s ease;
+            border-radius: 0;
+            -webkit-appearance: none;
+        }
+
+        .drug-input::placeholder {
+            color: #ccc;
+            font-weight: 300;
+        }
+
+        .drug-input:focus {
+            border-bottom-color: #2c2c2c;
+        }
+
+        .btn-add {
+            height: 48px;
+            padding: 0 20px;
+            background: transparent;
+            color: #2c2c2c;
+            border: 1px solid #2c2c2c;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add:active {
+            background: #2c2c2c;
+            color: #fff;
+        }
+
+        .camera-section {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-camera, .btn-gallery {
+            flex: 1;
+            height: 52px;
+            border: 1px solid #e8e6e3;
+            border-radius: 14px;
+            background: #fafaf8;
+            color: #666;
+            font-size: 12px;
+            font-weight: 400;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-camera:active, .btn-gallery:active {
+            border-color: #2c2c2c;
+            color: #2c2c2c;
+            background: #f5f4f2;
+        }
+
+        .btn-icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .drug-list-section {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid #f0eeec;
+        }
+
+        .drug-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 40px;
+            align-items: center;
+        }
+
+        .drug-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #fafaf8;
+            border: 1px solid #eae8e5;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 300;
+            color: #2c2c2c;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .drug-tag::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #c4924a;
+            flex-shrink: 0;
+        }
+
+        .drug-tag .remove {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #bbb;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+
+        .drug-tag .remove:active {
+            background: #c0564b;
+            border-color: #c0564b;
+            color: white;
+        }
+
+        .empty-hint {
+            color: #ccc;
+            font-size: 13px;
+            font-weight: 300;
+            padding: 8px 0;
+        }
+
+        .btn-check {
+            width: 100%;
+            height: 52px;
+            background: #2c2c2c;
+            color: #fff;
+            border: none;
+            border-radius: 26px;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            cursor: pointer;
+            margin-bottom: 32px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .btn-check::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #5a9e6f;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-check:not(:disabled)::before {
+            opacity: 1;
+        }
+
+        .btn-check:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-check:disabled {
+            background: #e8e6e3;
+            color: #bbb;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .summary-card {
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            border: 1px solid #f0eeec;
+        }
+
+        .summary-card.danger-summary {
+            background: #fffbfa;
+            border-color: #f0e0dc;
+        }
+
+        .summary-card.warning-summary {
+            background: #fffcf5;
+            border-color: #f0e8d8;
+        }
+
+        .summary-card.safe-summary {
+            background: #f8fcf8;
+            border-color: #dceede;
+        }
+
+        .summary-card h3 {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-card h3::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .danger-summary h3::before {
+            background: #c0564b;
+        }
+
+        .warning-summary h3::before {
+            background: #c4924a;
+        }
+
+        .safe-summary h3::before {
+            background: #5a9e6f;
+        }
+
+        .summary-card p {
+            font-size: 13px;
+            font-weight: 300;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .timeline-card {
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            background: #fafaf8;
+            border: 1px solid #f0eeec;
+        }
+
+        .timeline-card h3 {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .timeline {
+            padding-left: 20px;
+            border-left: 1px solid #e0dedc;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px 0 10px 16px;
+            font-size: 13px;
+            font-weight: 300;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 16px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #2c2c2c;
+        }
+
+        .result-item {
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #f0eeec;
+            background: #ffffff;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-item.danger {
+            border-left: 3px solid #c0564b;
+            background: #fffbfa;
+        }
+
+        .result-item.warning {
+            border-left: 3px solid #c4924a;
+            background: #fffcf5;
+        }
+
+        .result-item.safe {
+            border-left: 3px solid #5a9e6f;
+            background: #f8fcf8;
+        }
+
+        .result-item.info {
+            border-left: 3px solid #b0b0b0;
+            background: #fafaf8;
+        }
+
+        .result-level {
+            font-size: 12px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .result-item.danger .result-level { color: #c0564b; }
+        .result-item.warning .result-level { color: #c4924a; }
+        .result-item.safe .result-level { color: #5a9e6f; }
+        .result-item.info .result-level { color: #999; }
+
+        .result-drugs {
+            font-size: 15px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 8px;
+        }
+
+        .result-desc {
+            font-size: 13px;
+            font-weight: 300;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .result-advice {
+            padding: 16px;
+            background: #fafaf8;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 300;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .result-advice strong {
+            font-weight: 400;
+            color: #2c2c2c;
+        }
+
+        .disclaimer-box {
+            margin-top: 32px;
+            padding: 20px;
+            background: #fafaf8;
+            border: 1px solid #f0eeec;
+            border-radius: 12px;
+        }
+
+        .disclaimer-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #c0564b;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .disclaimer-content p {
+            font-size: 12px;
+            font-weight: 300;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 8px;
+        }
+
+        .disclaimer-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .disclaimer-update {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0eeec;
+            font-size: 11px;
+            font-weight: 300;
+            color: #999;
+        }
+
+        .pill-icon {
+            display: inline-block;
+            width: 14px;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #c0564b 50%, #fafaf8 50%);
+            border: 1px solid #e0dedc;
+            margin-right: 6px;
+            vertical-align: middle;
+            position: relative;
+            top: -1px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.92);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-box {
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 1.5px solid #e8e6e3;
+            border-top-color: #2c2c2c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 12px;
+            font-weight: 300;
+            color: #999;
+            letter-spacing: 1px;
+        }
+
+        .ocr-preview {
+            display: none;
+            margin-top: 20px;
+            padding: 16px;
+            background: #fafaf8;
+            border-radius: 12px;
+            border: 1px solid #f0eeec;
+        }
+
+        .ocr-preview.show {
+            display: block;
+        }
+
+        .ocr-preview img {
+            width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .ocr-result-text {
+            font-size: 12px;
+            font-weight: 300;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        .ocr-drugs-found {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ocr-drug-btn {
+            padding: 8px 16px;
+            background: transparent;
+            color: #2c2c2c;
+            border: 1px solid #2c2c2c;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 300;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ocr-drug-btn:active {
+            background: #2c2c2c;
+            color: #fff;
+        }
+
+        .drug-tag-alias {
+            font-size: 11px;
+            color: #999;
+            margin-left: 4px;
+        }
+
+        .ocr-hint {
+            font-size: 12px;
+            color: #999;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* AI 深度验证区域 */
+        .ai-verify-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0eeec;
+        }
+
+        .btn-ai-verify {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #4a6cf7 0%, #6366f1 100%);
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-ai-verify:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-ai-verify:disabled {
+            background: #d0d0d0;
+            cursor: not-allowed;
+        }
+
+        .btn-ai-verify .ai-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .ai-config-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #999;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* AI 结果卡片 */
+        .ai-result-section {
+            margin-top: 20px;
+            animation: slideUp 0.4s ease;
+        }
+
+        .ai-result-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 400;
+            color: #4a6cf7;
+            letter-spacing: 1px;
+        }
+
+        .ai-result-card {
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e8e6f8;
+            background: #fafaff;
+            margin-bottom: 16px;
+        }
+
+        .ai-grade-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .ai-grade-badge.grade-x { background: #fde8e8; color: #991b1b; }
+        .ai-grade-badge.grade-a { background: #fee2e2; color: #c0564b; }
+        .ai-grade-badge.grade-b { background: #fef3c7; color: #92400e; }
+        .ai-grade-badge.grade-c { background: #ecfdf5; color: #065f46; }
+        .ai-grade-badge.grade-d { background: #f0f0f0; color: #666; }
+
+        .ai-card-drugs {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 10px;
+        }
+
+        .ai-card-field {
+            margin-bottom: 10px;
+        }
+
+        .ai-card-field-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #4a6cf7;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-card-field-content {
+            font-size: 13px;
+            font-weight: 300;
+            color: #444;
+            line-height: 1.8;
+        }
+
+        /* 配置弹窗 */
+        .config-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .config-modal.show {
+            display: flex;
+        }
+
+        .config-box {
+            width: 100%;
+            max-width: 380px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .config-title {
+            font-size: 16px;
+            font-weight: 400;
+            color: #2c2c2c;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .config-field {
+            margin-bottom: 16px;
+        }
+
+        .config-label {
+            font-size: 12px;
+            font-weight: 400;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .config-select, .config-input {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #e0dedc;
+            border-radius: 10px;
+            padding: 0 14px;
+            font-size: 14px;
+            color: #2c2c2c;
+            background: #fafaf8;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .config-select:focus, .config-input:focus {
+            border-color: #4a6cf7;
+        }
+
+        .config-hint {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .config-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .config-btn {
+            flex: 1;
+            height: 42px;
+            border-radius: 21px;
+            font-size: 13px;
+            font-weight: 400;
+            cursor: pointer;
+            border: none;
+            letter-spacing: 0.5px;
+        }
+
+        .config-btn-cancel {
+            background: #f0eeec;
+            color: #666;
+        }
+
+        .config-btn-save {
+            background: #4a6cf7;
+            color: #fff;
+        }
+
+        .config-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .config-field label {
+            font-size: 12px;
+            font-weight: 400;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .config-field select,
+        .config-field input {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #e0dedc;
+            border-radius: 10px;
+            padding: 0 14px;
+            font-size: 14px;
+            color: #2c2c2c;
+            background: #fafaf8;
+            outline: none;
+            -webkit-appearance: none;
+            box-sizing: border-box;
+        }
+
+        .config-field select:focus,
+        .config-field input:focus {
+            border-color: #4a6cf7;
+        }
+
+        /* AI 验证结果详细样式 */
+        .ai-results-title {
+            font-size: 14px;
+            font-weight: 400;
+            color: #4a6cf7;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-top: 8px;
+        }
+
+        .ai-result-card .ai-result-header {
+            margin-bottom: 12px;
+        }
+
+        .ai-drug-pair {
+            font-size: 14px;
+            font-weight: 400;
+            color: #2c2c2c;
+        }
+
+        .ai-result-body {
+            padding-top: 4px;
+        }
+
+        .ai-field {
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 300;
+            color: #444;
+            line-height: 1.8;
+        }
+
+        .ai-field strong {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .ai-escalation {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: #fff5f5;
+            border-radius: 8px;
+            border-left: 3px solid #dc3545;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ai-icon.spinning {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>这些药能不能一起吃？</h1>
+        <p>输入药品名称或拍照，查询是否能同时服用</p>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <div class="section-label">输入药品名 <span class="capsule"></span></div>
+            <div class="input-row">
+                <input type="text" class="drug-input" id="drugInput" placeholder="药品名称，如布洛芬" />
+                <button class="btn-add" onclick="addDrug()">添加</button>
+            </div>
+            <div class="camera-section">
+                <button class="btn-camera" onclick="takePhoto()">
+                    <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                    拍照识别
+                </button>
+                <button class="btn-gallery" onclick="pickFromGallery()">
+                    <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+                    相册选取
+                </button>
+            </div>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)" />
+            <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImage(event)" />
+            
+            <div class="ocr-preview" id="ocrPreview">
+                <img id="ocrImage" src="" alt="拍照预览" />
+                <div class="ocr-result-text" id="ocrText">正在识别中...</div>
+                <div class="ocr-drugs-found" id="ocrDrugs"></div>
+            </div>
+        </div>
+
+        <div class="drug-list-section">
+            <div class="section-label">已添加药品 <span class="capsule"></span></div>
+            <div class="drug-tags" id="drugTags">
+                <div class="empty-hint">请添加至少两种药品</div>
+            </div>
+        </div>
+
+        <button class="btn-check" id="btnCheck" onclick="checkInteractions()" disabled>
+            查一查能不能一起吃
+        </button>
+
+        <div class="result-section" id="resultSection">
+        </div>
+
+
+        <div class="disclaimer-box" id="disclaimerBox">
+            <div class="disclaimer-title">重要声明</div>
+            <div class="disclaimer-content">
+                <p>1. 本工具数据来源于国家药品监督管理局(NMPA)批准的药品说明书、《中国药典·临床用药须知》、相关临床指南及专家共识，并辅以美国FDA OpenFDA开放数据交叉验证。</p>
+                <p>2. 本工具仅覆盖常见药物组合，不能穷尽所有相互作用。查询结果"未发现相互作用"不等于"绝对安全"。</p>
+                <p>3. 药物相互作用受剂量、个体差异、肝肾功能等多种因素影响，本工具无法替代医生或药师的个体化评估。</p>
+                <p>4. 如您正在服用多种药物，请务必咨询医师或药师后再做用药决定。如出现不适症状请立即就医。</p>
+            </div>
+            <div class="disclaimer-update">数据更新日期：2025年1月 | 数据来源：药品说明书 + 临床指南 + 医学数据库</div>
+            <div class="ai-config-footer" onclick="showConfigModal()" style="margin-top:8px;font-size:10px;color:#ccc;cursor:pointer;text-align:center;">高级设置</div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading">
+        <div class="loading-box">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">正在分析中...</div>
+        </div>
+    </div>
+
+    <script>
+        const drugDatabase = {
+            aliases: {
+                '布洛芬': ['芬必得', '美林', '布洛芬缓释胶囊'],
+                '对乙酰氨基酚': ['扑热息痛', '泰诺', '必理通', '日夜百服宁', '散利痛'],
+                '阿司匹林': ['拜阿司匹灵', '阿司匹林肠溶片', '巴米尔'],
+                '头孢克洛': ['希刻劳', '头孢克洛缓释胶囊'],
+                '头孢氨苄': ['先锋IV号', '希法先'],
+                '阿莫西林': ['阿莫仙', '再林', '弗莱莫星'],
+                '甲硝唑': ['灭滴灵', '甲硝唑片'],
+                '氯雷他定': ['开瑞坦', '氯雷他定片'],
+                '西替利嗪': ['仙特明', '西可韦'],
+                '奥美拉唑': ['洛赛克', '奥美拉唑肠溶胶囊'],
+                '雷贝拉唑': ['波利特', '瑞波特'],
+                '蒙脱石散': ['思密达', '必奇'],
+                '藿香正气水': ['藿香正气液', '藿香正气口服液', '藿香正气胶囊', '藿香正气丸', '藿香正气滴丸', '太极藿香正气口服液'],
+                '连花清瘟': ['连花清瘟胶囊', '连花清瘟颗粒', '莲花清瘟', '莲花清瘟胶囊', '莲花清瘟颗粒'],
+                '感冒灵': ['感冒灵颗粒', '999感冒灵'],
+                '板蓝根': ['板蓝根颗粒'],
+                '双黄连': ['双黄连口服液'],
+                '维生素C': ['维C', 'VC'],
+                '碳酸钙': ['钙尔奇', '迪巧'],
+                '硫酸亚铁': ['福乃得', '力蜚能'],
+                '华法林': ['华法林钠片'],
+                '氯吡格雷': ['波立维', '泰嘉'],
+                '二甲双胍': ['格华止', '美迪康'],
+                '阿卡波糖': ['拜唐苹'],
+                '辛伐他汀': ['舒降之', '京必舒新'],
+                '阿托伐他汀': ['立普妥', '阿乐'],
+                '氨氯地平': ['络活喜', '压氏达'],
+                '硝苯地平': ['心痛定', '拜新同'],
+                '美托洛尔': ['倍他乐克', '美托洛尔缓释片'],
+                '地高辛': ['狄戈辛'],
+                '速效救心丸': [],
+                '复方丹参滴丸': ['丹参滴丸'],
+                '银杏叶片': ['金纳多', '银杏叶提取物'],
+                '左氧氟沙星': ['可乐必妥', '利复星'],
+                '诺氟沙星': ['氟哌酸'],
+                '罗红霉素': ['罗力得', '严迪'],
+                '阿奇霉素': ['希舒美', '泰力特'],
+                '克拉霉素': ['克拉仙', '诺邦'],
+                '多潘立酮': ['吗丁啉'],
+                '莫沙必利': ['加斯清', '新络纳'],
+                '右美沙芬': ['氢溴酸右美沙芬片'],
+                '氨溴索': ['沐舒坦', '兰苏'],
+                '孟鲁司特': ['顺尔宁'],
+                '沙丁胺醇': ['万托林'],
+                '地塞米松': ['氟美松'],
+                '泼尼松': ['强的松'],
+                '褪黑素': ['脑白金', '褪黑素片'],
+                '地西泮': ['安定', '安定片'],
+                '艾司唑仑': ['舒乐安定'],
+                '氟西汀': ['百忧解', '优克'],
+                '舍曲林': ['左洛复'],
+                '大活络丸': ['同仁大活络丸', '同仁堂大活络丸', '大活络胶囊', '大活络口服液', '北京同仁堂大活络丸'],
+                '安宫牛黄丸': ['同仁安宫牛黄丸'],
+                '牛黄解毒片': ['牛黄解毒丸', '牛黄解毒胶囊'],
+                '六味地黄丸': ['六味地黄胶囊', '六味地黄颗粒'],
+                '金匮肾气丸': ['桂附地黄丸', '肾气丸'],
+                '逍遥丸': ['逍遥颗粒', '加味逍遥丸'],
+                '补中益气丸': ['补中益气颗粒', '补中益气口服液'],
+                '归脾丸': ['归脾颗粒', '归脾合剂'],
+                '血府逐瘀丸': ['血府逐瘀胶囊', '血府逐瘀口服液'],
+                '通心络胶囊': ['通心络'],
+                '麝香保心丸': ['麝香保心'],
+                '丹参片': ['复方丹参片', '丹参注射液'],
+                '三七片': ['三七粉', '云南白药三七片'],
+                '云南白药': ['云南白药胶囊', '云南白药气雾剂'],
+                '跌打丸': ['跌打损伤丸'],
+                '正骨水': ['正骨水外用液'],
+                '活血止痛散': ['活血止痛胶囊'],
+                '消炎利胆片': ['消炎利胆胶囊'],
+                '龙胆泻肝丸': ['龙胆泻肝颗粒'],
+                '黄连素': ['盐酸小檗碱', '黄连素片'],
+                '参苓白术散': ['参苓白术丸', '参苓白术颗粒'],
+                '健胃消食片': ['健胃消食颗粒'],
+                '保和丸': ['保和颗粒'],
+                '香砂养胃丸': ['香砂养胃颗粒'],
+                '附子理中丸': ['附子理中片'],
+                '玉屏风散': ['玉屏风颗粒', '玉屏风口服液'],
+                '川贝枇杷膏': ['川贝枇杷糖浆', '川贝枇杷颗粒'],
+                '急支糖浆': ['急支颗粒'],
+                '止咳糖浆': ['止咳颗粒'],
+                '小柴胡颗粒': ['小柴胡片', '小柴胡汤'],
+                '银翘解毒片': ['银翘解毒颗粒', '银翘解毒丸'],
+                '防风通圣丸': ['防风通圣颗粒'],
+                '牛黄清心丸': ['同仁牛黄清心丸'],
+                '苏合香丸': ['同仁苏合香丸'],
+                '再造丸': ['同仁再造丸'],
+                '乌鸡白凤丸': ['乌鸡白凤片', '乌鸡白凤颗粒'],
+                '益母草颗粒': ['益母草片', '益母草膏'],
+                '妇科千金片': ['妇科千金胶囊'],
+                '桂枝茯苓丸': ['桂枝茯苓胶囊'],
+                '氨咖黄敏胶囊': ['速效伤风胶囊', '速效感冒胶囊'],
+                '复方氨酚烷胺': ['快克', '感康'],
+                '酚麻美敏': ['泰诺感冒片', '日夜感冒片'],
+                '氨麻美敏': ['新康泰克', '白加黑'],
+                '复方甘草片': ['甘草片'],
+                '蒲地蓝消炎': ['蒲地蓝消炎口服液', '蒲地蓝消炎片'],
+                '清开灵': ['清开灵颗粒', '清开灵胶囊', '清开灵口服液'],
+                '风油精': ['清凉油', '万金油'],
+                '马应龙': ['马应龙痔疮膏', '马应龙麝香痔疮膏'],
+                '开塞露': ['甘油灌肠剂'],
+                '创可贴': ['邦迪', '云南白药创可贴'],
+                '红霉素软膏': ['红霉素眼膏'],
+                '双氯芬酸': ['扶他林', '英太青', '双氯芬酸钠'],
+                '吲哚美辛': ['消炎痛', '吲哚美辛肠溶片'],
+                '萘普生': ['消痛灵', '萘普生钠'],
+                '氨基葡萄糖': ['维骨力', '葡立', '氨糖'],
+                '脑心通胶囊': ['脑心通', '步长脑心通'],
+                '血塞通': ['血塞通片', '血塞通胶囊', '注射用血塞通'],
+                '丹红注射液': ['丹红'],
+                '黄芪颗粒': ['黄芪片', '黄芪口服液'],
+                '当归': ['当归片', '当归补血颗粒'],
+                '枸杞': ['枸杞子', '杞菊地黄丸'],
+                '三黄片': ['三黄胶囊'],
+            },
+
+            interactions: [
+                { drugs: ['布洛芬', '阿司匹林'], level: 'danger', description: '两者都是非甾体抗炎药(NSAIDs)，同时服用会显著增加胃肠道出血和溃疡的风险。布洛芬还可能降低阿司匹林的心脏保护作用。', advice: '避免同时服用。如需同时使用，布洛芬应在服用阿司匹林前8小时或后30分钟服用。', interval: '至少间隔8小时', source: '布洛芬片说明书(NMPA)；FDA Drug Safety Communication 2006；Catella-Lawson F. N Engl J Med 2001;345:1809-17' },
+                { drugs: ['布洛芬', '对乙酰氨基酚'], level: 'warning', description: '两者都是解热镇痛药，联合使用时肝肾负担增加。短期交替使用相对安全，但不建议同时长期服用。', advice: '可以交替服用来退烧。建议间隔4-6小时交替使用，单次不要同时吃。注意每日总剂量不要超标。', interval: '交替服用间隔4-6小时', source: '对乙酰氨基酚片说明书(NMPA)；中国0至5岁儿童病因不明急性发热诊断处理循证指南(2016)' },
+                { drugs: ['阿司匹林', '华法林'], level: 'danger', description: '两者都有抗凝血作用，联合使用大幅增加出血风险，可能导致严重的内出血。', advice: '禁止自行联合使用，必须在医生严格监控下才能联用。如有异常出血应立即就医。', interval: '禁止联用', source: '华法林钠片说明书(NMPA)；华法林抗凝治疗的中国专家共识(2013)' },
+                { drugs: ['头孢克洛', '藿香正气水'], level: 'danger', description: '头孢类抗生素与含酒精的藿香正气水同服会产生双硫仑样反应，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。', advice: '禁止同时使用！服用头孢类抗生素期间及停药后7天内，不得饮酒或服用含酒精的药物。可用不含酒精的藿香正气口服液替代。', interval: '头孢停药后至少7天才能服用含酒精制剂', source: '头孢克洛说明书(NMPA)；藿香正气水说明书(含乙醇40-50%)；抗菌药物临床应用指导原则(2015版)' },
+                { drugs: ['头孢氨苄', '藿香正气水'], level: 'danger', description: '头孢类抗生素与含酒精的藿香正气水同服会产生双硫仑样反应，出现面部潮红、头痛、恶心、心悸，严重可致呼吸困难甚至休克。', advice: '禁止同时使用！服用头孢类抗生素期间及停药后7天内，不得饮酒或服用含酒精的药物。', interval: '头孢停药后至少7天才能服用含酒精制剂', source: '头孢氨苄说明书(NMPA)；藿香正气水说明书；双硫仑样反应临床文献综述' },
+                { drugs: ['甲硝唑', '藿香正气水'], level: 'danger', description: '甲硝唑与酒精同服会产生双硫仑样反应，症状包括恶心、呕吐、心动过速、低血压等。', advice: '禁止同时使用！服用甲硝唑期间及停药后3天内禁酒。', interval: '停药后至少3天', source: '甲硝唑片说明书(NMPA)；Stockley\'s Drug Interactions 12th Ed' },
+                { drugs: ['阿莫西林', '甲硝唑'], level: 'safe', description: '两者可以联合使用，临床上常见联用于幽门螺杆菌(Hp)感染的根除治疗。', advice: '可以同时服用，遵医嘱用量即可。', interval: '可同时服用', source: '第五次全国幽门螺杆菌感染处理共识报告(2017)；Maastricht V/Florence Consensus Report' },
+                { drugs: ['奥美拉唑', '氯吡格雷'], level: 'danger', description: '奥美拉唑会抑制CYP2C19酶，降低氯吡格雷的抗血小板效果，增加心血管事件风险。', advice: '应避免联用。如需护胃，可选用泮托拉唑或雷贝拉唑替代奥美拉唑。', interval: '建议更换药物，不建议联用', source: 'FDA Drug Safety Communication 2009；ACCF/ACG/AHA Expert Consensus 2010；氯吡格雷说明书(NMPA)' },
+                { drugs: ['碳酸钙', '左氧氟沙星'], level: 'warning', description: '钙剂会与喹诺酮类抗生素络合，降低抗生素的吸收和疗效。', advice: '两药需间隔至少2小时服用。先服抗生素，2小时后再服钙片。', interval: '间隔至少2小时', source: '左氧氟沙星片说明书(NMPA)；抗菌药物临床应用指导原则(2015版)' },
+                { drugs: ['碳酸钙', '诺氟沙星'], level: 'warning', description: '钙剂会与喹诺酮类抗生素络合，降低抗生素的吸收和疗效。', advice: '两药需间隔至少2小时服用。先服抗生素，2小时后再服钙片。', interval: '间隔至少2小时', source: '诺氟沙星胶囊说明书(NMPA)；Lomaestro BM. Ann Pharmacother 1991' },
+                { drugs: ['硫酸亚铁', '碳酸钙'], level: 'warning', description: '钙和铁会相互竞争吸收，同服会降低两者的吸收率。', advice: '应间隔2小时以上服用。建议铁剂早餐前服用，钙剂晚餐后或睡前服用。', interval: '间隔至少2小时', source: '中国居民膳食营养素参考摄入量(2013版)；Hallberg L. Am J Clin Nutr 1991' },
+                { drugs: ['辛伐他汀', '克拉霉素'], level: 'danger', description: '克拉霉素是CYP3A4强抑制剂，会使辛伐他汀血药浓度大幅升高，增加横纹肌溶解风险。', advice: '禁止联用！如需使用大环内酯类抗生素，应暂停他汀或换用阿奇霉素。', interval: '禁止联用', source: '辛伐他汀片说明书(NMPA)；FDA Drug Safety Communication 2012；中国成人血脂异常防治指南(2016修订版)' },
+                { drugs: ['阿托伐他汀', '克拉霉素'], level: 'danger', description: '克拉霉素是CYP3A4强抑制剂，会使阿托伐他汀血药浓度升高，增加肌病风险。', advice: '联用期间阿托伐他汀日剂量不应超过20mg，密切监测肌肉症状。建议咨询医生调整方案。', interval: '需医生评估后减量联用', source: '阿托伐他汀说明书(NMPA)；ACC/AHA Guideline on Cholesterol 2018' },
+                { drugs: ['地高辛', '阿莫西林'], level: 'warning', description: '部分抗生素可改变肠道菌群，减少地高辛的代谢，导致地高辛血药浓度升高。', advice: '联用时应注意监测地高辛血药浓度，注意有无恶心、心律不齐等中毒症状。', interval: '可联用但需监测', source: '地高辛片说明书(NMPA)；Lindenbaum J. N Engl J Med 1981;305:789-94' },
+                { drugs: ['二甲双胍', '碳酸钙'], level: 'safe', description: '两者没有明显的药物相互作用，可以一起服用。', advice: '可以同时服用，不影响各自疗效。', interval: '可同时服用', source: '二甲双胍说明书(NMPA)；中国2型糖尿病防治指南(2020版)' },
+                { drugs: ['氨氯地平', '辛伐他汀'], level: 'warning', description: '氨氯地平会轻度抑制CYP3A4，使辛伐他汀血药浓度升高，增加肌病风险。', advice: '联用时辛伐他汀每日剂量不应超过20mg。或者换用受影响较小的瑞舒伐他汀。', interval: '可联用但需限制剂量', source: 'FDA Drug Safety Communication 2011；氨氯地平说明书(NMPA)' },
+                { drugs: ['连花清瘟', '感冒灵'], level: 'warning', description: '两者功效相近，均用于感冒治疗，叠加使用无必要且可能增加不良反应。部分复方感冒药含相同成分，存在重复用药风险。', advice: '不要同时服用功效相近的复方感冒药。选择一种即可，避免重复用药。', interval: '选一种服用，不要同时吃', source: '连花清瘟胶囊说明书(NMPA)；感冒灵颗粒说明书(NMPA)；合理用药原则' },
+                { drugs: ['连花清瘟', '对乙酰氨基酚'], level: 'warning', description: '连花清瘟中不含对乙酰氨基酚，但两者可能有部分退热作用重叠。', advice: '可以联用，但需注意观察退热效果，避免过度降温。建议间隔1-2小时。', interval: '建议间隔1-2小时', source: '连花清瘟胶囊说明书(NMPA)；新型冠状病毒感染诊疗方案(第十版)' },
+                { drugs: ['感冒灵', '对乙酰氨基酚'], level: 'danger', description: '999感冒灵中已含有对乙酰氨基酚，再额外服用会导致对乙酰氨基酚过量，可能引发严重肝损害。', advice: '禁止同时服用！999感冒灵本身就含对乙酰氨基酚，不能再加服泰诺等同类药。', interval: '禁止联用（成分重复）', source: '感冒灵颗粒说明书(NMPA，含对乙酰氨基酚100mg/袋)；FDA对乙酰氨基酚肝损害警示' },
+                { drugs: ['感冒灵', '布洛芬'], level: 'warning', description: '感冒灵含有对乙酰氨基酚等解热镇痛成分，与布洛芬作用相似，联用增加胃肠道不良反应。', advice: '不建议联用。如需更强的退热效果，可在感冒灵服后4-6小时使用布洛芬。', interval: '间隔4-6小时', source: '感冒灵颗粒说明书(NMPA)；布洛芬片说明书(NMPA)' },
+                { drugs: ['蒙脱石散', '阿莫西林'], level: 'warning', description: '蒙脱石散有强吸附作用，会吸附同时服用的其他药物，降低其疗效。', advice: '蒙脱石散应与其他药物间隔至少1-2小时服用。先服其他药物，再服蒙脱石散。', interval: '间隔至少1-2小时', source: '蒙脱石散说明书(NMPA)；中国儿童急性感染性腹泻病临床实践指南(2016)' },
+                { drugs: ['蒙脱石散', '诺氟沙星'], level: 'warning', description: '蒙脱石散会吸附诺氟沙星，显著降低其抗菌效果。', advice: '两药必须间隔至少2小时。建议先服诺氟沙星，2小时后再用蒙脱石散。', interval: '间隔至少2小时', source: '蒙脱石散说明书(NMPA)；诺氟沙星胶囊说明书(NMPA)' },
+                { drugs: ['多潘立酮', '奥美拉唑'], level: 'safe', description: '两者联用常见于胃病治疗，多潘立酮促进胃动力，奥美拉唑抑制胃酸，相互不冲突。', advice: '可以联用。建议奥美拉唑早餐前30分钟空腹服用，多潘立酮餐前15-30分钟服用。', interval: '可同时期服用', source: '多潘立酮片说明书(NMPA)；中国胃食管反流病专家共识(2020)' },
+                { drugs: ['氯雷他定', '对乙酰氨基酚'], level: 'safe', description: '两者没有明显相互作用，可以安全联用。抗过敏的同时如需退热镇痛是可以的。', advice: '可以同时服用，各自按说明书剂量即可。', interval: '可同时服用', source: '氯雷他定片说明书(NMPA)；对乙酰氨基酚片说明书(NMPA)' },
+                { drugs: ['氯雷他定', '西替利嗪'], level: 'warning', description: '两者都是抗组胺药，作用机制相似，同服会增加嗜睡等副作用，且疗效不会叠加。', advice: '不要同时服用两种抗过敏药，选择一种即可。如一种效果不好，可换另一种，但不要叠加。', interval: '选一种服用即可', source: '氯雷他定片说明书(NMPA)；西替利嗪片说明书(NMPA)；变应性鼻炎诊断和治疗指南(2022修订版)' },
+                { drugs: ['地西泮', '氟西汀'], level: 'warning', description: '氟西汀可能增加地西泮的血药浓度，增强镇静作用。', advice: '联用需医生指导，可能需要减少地西泮剂量。注意过度镇静和呼吸抑制。', interval: '需医生指导联用', source: '氟西汀说明书(NMPA)；Stockley\'s Drug Interactions 12th Ed' },
+                { drugs: ['褪黑素', '地西泮'], level: 'warning', description: '两者都有镇静催眠作用，联用可能过度抑制中枢神经系统。', advice: '不建议同时使用，过度镇静可能影响次日精神状态。选择一种助眠方式即可。', interval: '不建议联用', source: '褪黑素产品说明(保健食品)；地西泮说明书(NMPA)；中国成人失眠诊断与治疗指南(2017版)' },
+                { drugs: ['美托洛尔', '硝苯地平'], level: 'warning', description: '两者联用可能过度降压，且美托洛尔+硝苯地平可能增加心动过缓风险。', advice: '联用是临床常见方案，但需在医生指导下调整剂量。注意监测血压和心率。', interval: '可联用但需医生指导', source: '美托洛尔说明书(NMPA)；中国高血压防治指南(2018修订版)' },
+                { drugs: ['速效救心丸', '硝苯地平'], level: 'warning', description: '两者均有扩张血管作用，联用可能导致血压过低。', advice: '急性心绞痛发作时可先含服速效救心丸，待症状缓解后再正常服用降压药。不要同时大量使用。', interval: '建议间隔使用', source: '速效救心丸说明书(NMPA)；冠心病合理用药指南(第2版)' },
+                { drugs: ['复方丹参滴丸', '华法林'], level: 'warning', description: '丹参具有活血化瘀作用，可能增强华法林的抗凝效果，增加出血风险。', advice: '联用时应更频繁监测INR值。如有皮肤淤斑、牙龈出血等应及时就医。', interval: '可联用但需密切监测凝血功能', source: '复方丹参滴丸说明书(NMPA)；Chan TY. Drug Saf 2001;24:401-7' },
+                { drugs: ['布洛芬', '氯吡格雷'], level: 'danger', description: 'NSAIDs与氯吡格雷联用会显著增加消化道出血风险。', advice: '应避免联用。如确需镇痛，可选用对乙酰氨基酚，对血小板影响较小。', interval: '避免联用', source: 'FDA Drug Safety Communication；Bhatt DL. N Engl J Med 2008' },
+                { drugs: ['维生素C', '碳酸钙'], level: 'safe', description: '维生素C可以促进钙的吸收，两者联用是有益的。', advice: '可以同时服用，维生素C有助于钙吸收。', interval: '可同时服用', source: '中国居民膳食营养素参考摄入量(2013版)' },
+                { drugs: ['阿奇霉素', '辛伐他汀'], level: 'warning', description: '阿奇霉素对CYP3A4有轻度抑制作用，可能轻微升高他汀血药浓度。', advice: '短期联用风险较低，但应注意有无肌肉疼痛等不适。疗程较长时建议咨询医生。', interval: '短期可联用，注意监测', source: '阿奇霉素说明书(NMPA)；FDA Drug Safety Communication 2012' },
+                { drugs: ['阿卡波糖', '蒙脱石散'], level: 'warning', description: '蒙脱石散的吸附作用可能影响阿卡波糖在肠道的作用。', advice: '建议间隔2小时以上服用。阿卡波糖随第一口饭服用，蒙脱石散两餐之间服用。', interval: '间隔至少2小时', source: '阿卡波糖片说明书(NMPA)；蒙脱石散说明书(NMPA)' },
+                { drugs: ['银杏叶片', '阿司匹林'], level: 'warning', description: '银杏叶有抗血小板聚集作用，与阿司匹林联用会增加出血风险。', advice: '不建议自行联用。如正在服用阿司匹林，使用银杏叶制剂前应咨询医生。', interval: '不建议联用', source: '银杏叶片说明书(NMPA)；Bone KM. Br J Clin Pharmacol 2008;66:59-78' },
+                { drugs: ['银杏叶片', '华法林'], level: 'danger', description: '银杏叶可能增强华法林的抗凝效果，显著增加出血风险。', advice: '禁止自行联用！正在服用华法林的患者使用任何活血类中药前必须咨询医生。', interval: '禁止联用', source: '银杏叶片说明书(NMPA)；华法林抗凝治疗的中国专家共识(2013)；Bent S. Ann Intern Med 2005' },
+                { drugs: ['泼尼松', '布洛芬'], level: 'warning', description: '糖皮质激素与NSAIDs联用会增加消化道溃疡和出血的风险。', advice: '联用时应加用胃黏膜保护剂。注意有无胃部不适、黑便等症状。', interval: '尽量避免，必须联用时加护胃药', source: '泼尼松片说明书(NMPA)；Piper JM. Ann Intern Med 1991;114:735-40' },
+                { drugs: ['孟鲁司特', '氯雷他定'], level: 'safe', description: '两者作用机制不同（白三烯受体拮抗剂+抗组胺药），可以协同抗过敏。', advice: '可以安全联用，临床常见联合方案用于过敏性鼻炎和哮喘。', interval: '可同时服用', source: '孟鲁司特钠片说明书(NMPA)；GINA哮喘防治全球策略(2023)' },
+                { drugs: ['氨溴索', '右美沙芬'], level: 'warning', description: '氨溴索是化痰药（促进痰液排出），右美沙芬是镇咳药（抑制咳嗽）。联用时镇咳作用可能导致痰液无法排出，加重病情。', advice: '一般不建议同时使用。有痰时应以化痰为主，干咳无痰时用镇咳药。如必须联用，白天用化痰药，晚上用镇咳药。', interval: '白天化痰，夜间镇咳', source: '氨溴索说明书(NMPA)；咳嗽的诊断与治疗指南(2021修订版)' },
+                { drugs: ['硫酸亚铁', '左氧氟沙星'], level: 'warning', description: '铁剂会与喹诺酮类抗生素形成螯合物，降低抗生素吸收率。', advice: '需间隔至少2小时服用。先服用抗生素，2小时后再服铁剂。', interval: '间隔至少2小时', source: '左氧氟沙星片说明书(NMPA)；Polk RE. Antimicrob Agents Chemother 1989' },
+                { drugs: ['奥美拉唑', '碳酸钙'], level: 'warning', description: '奥美拉唑抑制胃酸分泌，而碳酸钙需要酸性环境才能更好溶解吸收。长期联用可能影响钙吸收。', advice: '短期联用影响不大。长期联用时，可考虑换用柠檬酸钙（不依赖胃酸吸收）。两者错开1小时服用更佳。', interval: '建议间隔1小时', source: '奥美拉唑肠溶胶囊说明书(NMPA)；O\'Connell MB. Ann Pharmacother 2005' },
+            ]
+        };
+
+        let drugList = [];
+
+        function normalizeDrugName(name) {
+            name = name.trim();
+            if (drugDatabase.aliases[name] !== undefined) {
+                return name;
+            }
+            for (const [generic, brands] of Object.entries(drugDatabase.aliases)) {
+                if (brands.some(b => name.includes(b) || b.includes(name))) {
+                    return generic;
+                }
+                if (name.includes(generic)) {
+                    return generic;
+                }
+            }
+            return name;
+        }
+
+        function addDrug(name) {
+            const input = document.getElementById('drugInput');
+            const drugName = name || input.value.trim();
+            
+            if (!drugName) return;
+            
+            const normalized = normalizeDrugName(drugName);
+            
+            if (drugList.some(d => d.normalized === normalized)) {
+                showToast('该药品已添加');
+                input.value = '';
+                return;
+            }
+
+            drugList.push({
+                original: drugName,
+                normalized: normalized
+            });
+
+            input.value = '';
+            renderDrugTags();
+            updateCheckButton();
+        }
+
+        function removeDrug(index) {
+            drugList.splice(index, 1);
+            renderDrugTags();
+            updateCheckButton();
+            if (drugList.length < 2) {
+                document.getElementById('resultSection').classList.remove('show');
+            }
+        }
+
+        function renderDrugTags() {
+            const container = document.getElementById('drugTags');
+            if (drugList.length === 0) {
+                container.innerHTML = '<div class="empty-hint">请添加至少两种药品</div>';
+                return;
+            }
+
+            container.innerHTML = drugList.map((drug, index) => {
+                const showAlias = drug.original !== drug.normalized;
+                return '<div class="drug-tag"><span>' + drug.original + (showAlias ? '<span class="drug-tag-alias">(' + drug.normalized + ')</span>' : '') + '</span><span class="remove" onclick="removeDrug(' + index + ')">&#215;</span></div>';
+            }).join('');
+        }
+
+        function updateCheckButton() {
+            const btn = document.getElementById('btnCheck');
+            btn.disabled = drugList.length < 2;
+        }
+
+        // OpenFDA API 集成：中文药名到英文名映射表（覆盖常见药品）
+        const drugNameEN = {
+            '布洛芬': 'ibuprofen', '对乙酰氨基酚': 'acetaminophen', '阿司匹林': 'aspirin',
+            '华法林': 'warfarin', '氯吡格雷': 'clopidogrel', '奥美拉唑': 'omeprazole',
+            '阿莫西林': 'amoxicillin', '甲硝唑': 'metronidazole', '头孢克洛': 'cefaclor',
+            '头孢氨苄': 'cephalexin', '左氧氟沙星': 'levofloxacin', '诺氟沙星': 'norfloxacin',
+            '阿奇霉素': 'azithromycin', '克拉霉素': 'clarithromycin', '辛伐他汀': 'simvastatin',
+            '阿托伐他汀': 'atorvastatin', '氨氯地平': 'amlodipine', '美托洛尔': 'metoprolol',
+            '硝苯地平': 'nifedipine', '地高辛': 'digoxin', '二甲双胍': 'metformin',
+            '阿卡波糖': 'acarbose', '氯雷他定': 'loratadine', '西替利嗪': 'cetirizine',
+            '多潘立酮': 'domperidone', '蒙脱石散': 'diosmectite', '氨溴索': 'ambroxol',
+            '右美沙芬': 'dextromethorphan', '地西泮': 'diazepam', '氟西汀': 'fluoxetine',
+            '泼尼松': 'prednisone', '孟鲁司特': 'montelukast', '碳酸钙': 'calcium carbonate',
+            '硫酸亚铁': 'ferrous sulfate', '维生素C': 'ascorbic acid', '褪黑素': 'melatonin',
+            '舍曲林': 'sertraline', '雷贝拉唑': 'rabeprazole', '罗红霉素': 'roxithromycin',
+        };
+
+        async function queryOpenFDA(drug1, drug2) {
+            const en1 = drugNameEN[drug1];
+            const en2 = drugNameEN[drug2];
+            if (!en1 || !en2) return null;
+
+            try {
+                const url = 'https://api.fda.gov/drug/label.json?search=drug_interactions:"' + en1 + '"+AND+drug_interactions:"' + en2 + '"&limit=1';
+                const response = await fetch(url);
+                if (!response.ok) return null;
+                const data = await response.json();
+                if (data.results && data.results.length > 0) {
+                    const interactionText = data.results[0].drug_interactions ? data.results[0].drug_interactions[0] : '';
+                    if (interactionText && (interactionText.toLowerCase().includes(en1) || interactionText.toLowerCase().includes(en2))) {
+                        return {
+                            found: true,
+                            text: interactionText.substring(0, 300),
+                            brand: data.results[0].openfda && data.results[0].openfda.brand_name ? data.results[0].openfda.brand_name[0] : en1,
+                            source: 'FDA Drug Label (OpenFDA API real-time query)'
+                        };
+                    }
+                }
+                return { found: false };
+            } catch (e) {
+                console.warn('OpenFDA query failed:', e);
+                return null;
+            }
+        }
+
+        async function checkInteractions() {
+            if (drugList.length < 2) return;
+
+            showLoading('正在分析药品相互作用...');
+
+            // 先做本地分析
+            const results = analyzeInteractions();
+
+            // 对 "未知组合" 尝试 OpenFDA 在线验证
+            const onlineChecks = [];
+            results.forEach(function(r, idx) {
+                if (r.level === 'info') {
+                    onlineChecks.push({ index: idx, drug1: r.drug1Normalized || r.drug1Name, drug2: r.drug2Normalized || r.drug2Name });
+                }
+            });
+
+            if (onlineChecks.length > 0) {
+                document.getElementById('loadingText').textContent = '正在联网验证未知组合...';
+                const promises = onlineChecks.map(function(item) {
+                    return queryOpenFDA(item.drug1, item.drug2).then(function(fdaResult) {
+                        return { index: item.index, result: fdaResult };
+                    });
+                });
+
+                try {
+                    const fdaResults = await Promise.all(promises);
+                    fdaResults.forEach(function(item) {
+                        if (item.result && item.result.found) {
+                            results[item.index].fdaInfo = item.result;
+                            results[item.index].description = '在FDA药品说明书数据库中发现相关记录。英文原文摘要：' + item.result.text + '...';
+                            results[item.index].advice = '建议咨询医生或药师，获取针对您具体情况的个性化建议。';
+                            results[item.index].level = 'warning';
+                            results[item.index].source = item.result.source;
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Online verification failed:', e);
+                }
+            }
+
+            displayResults(results);
+            hideLoading();
+
+            // 静默后台 AI 验证（用户无感知）
+            silentAiVerify(results);
+        }
+
+        function analyzeInteractions() {
+            const results = [];
+            const normalizedNames = drugList.map(d => d.normalized);
+
+            for (let i = 0; i < normalizedNames.length; i++) {
+                for (let j = i + 1; j < normalizedNames.length; j++) {
+                    const drug1 = normalizedNames[i];
+                    const drug2 = normalizedNames[j];
+
+                    const interaction = findInteraction(drug1, drug2);
+                    if (interaction) {
+                        results.push(Object.assign({}, interaction, {
+                            drug1Name: drugList[i].original,
+                            drug2Name: drugList[j].original,
+                            drug1Normalized: drug1,
+                            drug2Normalized: drug2,
+                        }));
+                    } else {
+                        results.push({
+                            drug1Name: drugList[i].original,
+                            drug2Name: drugList[j].original,
+                            drug1Normalized: drug1,
+                            drug2Normalized: drug2,
+                            level: 'info',
+                            description: '未在数据库中找到这两种药物的已知相互作用记录。',
+                            advice: '这不代表完全没有相互作用，只是暂未收录。建议服用前咨询医生或药师。',
+                            interval: '建议咨询药师'
+                        });
+                    }
+                }
+            }
+
+            const levelOrder = { 'danger': 0, 'warning': 1, 'info': 2, 'safe': 3 };
+            results.sort(function(a, b) { return levelOrder[a.level] - levelOrder[b.level]; });
+
+            return results;
+        }
+
+        function findInteraction(drug1, drug2) {
+            return drugDatabase.interactions.find(function(item) {
+                return (item.drugs.includes(drug1) && item.drugs.includes(drug2));
+            });
+        }
+
+        function displayResults(results) {
+            const section = document.getElementById('resultSection');
+            
+            const dangerCount = results.filter(r => r.level === 'danger').length;
+            const warningCount = results.filter(r => r.level === 'warning').length;
+            const safeCount = results.filter(r => r.level === 'safe').length;
+
+            let html = '';
+
+            if (dangerCount > 0) {
+                html += '<div class="summary-card danger-summary"><h3>发现严重相互作用</h3><p>发现 ' + dangerCount + ' 组严重相互作用' + (warningCount > 0 ? '，' + warningCount + ' 组需注意' : '') + '。请仔细阅读以下建议。</p></div>';
+            } else if (warningCount > 0) {
+                html += '<div class="summary-card warning-summary"><h3>部分药品需注意服用间隔</h3><p>发现 ' + warningCount + ' 组需要注意的相互作用。按建议的时间间隔服用即可。</p></div>';
+            } else {
+                html += '<div class="summary-card safe-summary"><h3>检查结果良好</h3><p>未发现严重的药品相互作用' + (safeCount > 0 ? '，部分组合可以安全联用。' : '。但建议服用前仍咨询药师确认。') + '</p></div>';
+            }
+
+            const timelineItems = generateTimeline(results);
+            if (timelineItems.length > 0) {
+                html += '<div class="timeline-card"><h3>建议服用顺序与间隔</h3><div class="timeline">';
+                timelineItems.forEach(function(item) {
+                    html += '<div class="timeline-item">' + item + '</div>';
+                });
+                html += '</div></div>';
+            }
+
+            const levelLabels = {
+                'danger': '严重冲突',
+                'warning': '需要注意',
+                'safe': '可以联用',
+                'info': '未知组合'
+            };
+
+            results.forEach(function(result) {
+                html += '<div class="result-item ' + result.level + '">';
+                html += '<div class="result-level">' + levelLabels[result.level] + '</div>';
+                html += '<div class="result-drugs">' + result.drug1Name + ' + ' + result.drug2Name + '</div>';
+                html += '<div class="result-desc">' + result.description + '</div>';
+                html += '<div class="result-advice"><strong>服用建议：</strong>' + result.advice + '<br><strong>间隔时间：</strong>' + result.interval + '</div>';
+                if (result.source) {
+                    html += '<div class="result-source" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e8e6e3;font-size:11px;color:#999;line-height:1.6;"><span style="color:#c0564b;font-weight:500;">数据来源：</span>' + result.source + '</div>';
+                }
+                html += '</div>';
+            });
+
+            section.innerHTML = html;
+            section.classList.add('show');
+
+            setTimeout(function() {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function generateTimeline(results) {
+            const items = [];
+
+            results.filter(r => r.level === 'danger').forEach(function(r) {
+                items.push(r.drug1Name + ' 与 ' + r.drug2Name + '：' + r.interval);
+            });
+
+            results.filter(r => r.level === 'warning' && r.interval && r.interval.indexOf('选一种') === -1).forEach(function(r) {
+                items.push(r.drug1Name + ' 与 ' + r.drug2Name + '：' + r.interval);
+            });
+
+            if (items.length === 0 && results.every(r => r.level === 'safe' || r.level === 'info')) {
+                items.push('所有药品可按各自说明书时间正常服用');
+            }
+
+            return items;
+        }
+
+        function takePhoto() {
+            document.getElementById('cameraInput').click();
+        }
+
+        function pickFromGallery() {
+            document.getElementById('galleryInput').click();
+        }
+
+        // 压缩图片到指定尺寸
+        function compressImage(file, maxSize) {
+            maxSize = maxSize || 1200;
+            return new Promise(function(resolve) {
+                var imgEl = new Image();
+                imgEl.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var w = imgEl.width, h = imgEl.height;
+                    if (w > h) {
+                        if (w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
+                    } else {
+                        if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                    URL.revokeObjectURL(imgEl.src);
+                };
+                imgEl.src = URL.createObjectURL(file);
+            });
+        }
+
+        async function handleImage(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+
+            var preview = document.getElementById('ocrPreview');
+            var imgEl = document.getElementById('ocrImage');
+            var ocrText = document.getElementById('ocrText');
+            var ocrDrugs = document.getElementById('ocrDrugs');
+
+            showLoading('正在处理图片...');
+
+            // 压缩图片到1200px（提高OCR精度）
+            var base64Data = await compressImage(file, 1200);
+            imgEl.src = base64Data;
+            preview.classList.add('show');
+
+            ocrText.textContent = '正在识别药品...';
+            ocrDrugs.innerHTML = '';
+            document.getElementById('loadingText').textContent = '识别中...';
+
+            try {
+                // 优先用 AI 视觉模型（如果已配置）
+                var config = getAiConfig();
+                var drugNames = [];
+
+                if (config.apiKey) {
+                    drugNames = await recognizeWithAI(base64Data, config);
+                    // AI返回的名称也尝试映射到数据库
+                    if (drugNames.length > 0) {
+                        drugNames = mapAiResultsToDatabase(drugNames);
+                    }
+                }
+
+                // AI 未配置或未识别到，用多引擎 OCR + 智能匹配
+                if (drugNames.length === 0) {
+                    document.getElementById('loadingText').textContent = 'OCR识别中...';
+                    drugNames = await multiEngineOCR(base64Data);
+                }
+
+                hideLoading();
+                if (drugNames && drugNames.length > 0) {
+                    ocrText.textContent = '识别完成';
+                    var btns = '<span class="ocr-hint">识别到以下药品，点击添加：</span>';
+                    drugNames.forEach(function(name) {
+                        btns += '<button class="ocr-drug-btn" onclick="addDrug(\'' + name.replace(/'/g, "\\'") + '\')">' + name + '</button>';
+                    });
+                    ocrDrugs.innerHTML = btns;
+                } else {
+                    ocrText.textContent = '未能自动识别';
+                    ocrDrugs.innerHTML = '<span class="ocr-hint">未识别到药品名称，请直接在上方输入框手动输入药品名</span>';
+                }
+            } catch (err) {
+                hideLoading();
+                console.error('[识别错误]', err);
+                ocrText.textContent = '识别失败';
+                ocrDrugs.innerHTML = '<span class="ocr-hint">请直接在上方输入框手动输入药品名称</span>';
+            }
+
+            event.target.value = '';
+        }
+
+        // AI 结果映射到数据库中的药品名
+        function mapAiResultsToDatabase(aiNames) {
+            var results = [];
+            var matchedGenerics = new Set();
+            for (var i = 0; i < aiNames.length; i++) {
+                var name = aiNames[i];
+                // 先尝试精确匹配
+                var generic = normalizeDrugName(name);
+                if (generic && !matchedGenerics.has(generic)) {
+                    results.push(generic);
+                    matchedGenerics.add(generic);
+                    continue;
+                }
+                // 再尝试模糊匹配
+                var fuzzyResult = fuzzyMatchDrug(name);
+                if (fuzzyResult && !matchedGenerics.has(fuzzyResult)) {
+                    results.push(fuzzyResult);
+                    matchedGenerics.add(fuzzyResult);
+                } else if (!generic) {
+                    // AI返回的名字不在数据库中，但可能是有效药名，直接保留
+                    results.push(name);
+                }
+            }
+            return results;
+        }
+
+        // 多引擎 OCR：同时使用 Engine 1 和 Engine 2，合并结果
+        async function multiEngineOCR(base64Data) {
+            var allText = '';
+            var results = [];
+
+            // 并行请求两个引擎
+            var [text1, text2] = await Promise.allSettled([
+                ocrWithFreeAPI(base64Data, '1'),
+                ocrWithFreeAPI(base64Data, '2')
+            ]);
+
+            var ocrTexts = [];
+            if (text1.status === 'fulfilled' && text1.value) ocrTexts.push(text1.value);
+            if (text2.status === 'fulfilled' && text2.value) ocrTexts.push(text2.value);
+
+            console.log('[多引擎OCR] 引擎1:', text1.status === 'fulfilled' ? (text1.value || '').substring(0, 100) : 'failed');
+            console.log('[多引擎OCR] 引擎2:', text2.status === 'fulfilled' ? (text2.value || '').substring(0, 100) : 'failed');
+
+            // 合并所有OCR文字
+            allText = ocrTexts.join('\n');
+
+            if (allText) {
+                results = matchDrugsFromText(allText);
+            }
+
+            return results;
+        }
+
+        // 免费 OCR：使用 ocr.space 免费 API（无需注册，支持中文）
+        async function ocrWithFreeAPI(base64Data, engine) {
+            engine = engine || '2';
+            var formData = new FormData();
+            formData.append('base64Image', base64Data);
+            formData.append('language', 'chs');
+            formData.append('isOverlayRequired', 'false');
+            formData.append('OCREngine', engine);
+            formData.append('scale', 'true');
+            formData.append('isTable', 'false');
+            formData.append('detectOrientation', 'true');
+
+            var response = await fetch('https://api.ocr.space/parse/image', {
+                method: 'POST',
+                headers: { 'apikey': 'K85403628988957' },
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('OCR服务请求失败');
+
+            var data = await response.json();
+            if (data.ParsedResults && data.ParsedResults.length > 0) {
+                var text = data.ParsedResults[0].ParsedText || '';
+                console.log('[OCR.space Engine' + engine + '] 识别文字:', text.substring(0, 200));
+                return text;
+            }
+            return '';
+        }
+
+        // AI 视觉识别药品名称（配置了 API Key 时使用）
+        async function recognizeWithAI(base64Data, config) {
+            var provider = config.provider;
+            var prompt = '这是药品包装照片，请只输出药品名称，不要其他内容。如有多个药品用换行分隔。';
+            var url, headers, body;
+
+            var b64match = base64Data.match(/^data:(image\/[a-z]+);base64,(.+)$/);
+            if (!b64match) throw new Error('图片格式错误');
+            var mimeType = b64match[1];
+            var b64str = b64match[2];
+
+            if (provider === 'siliconflow') {
+                var baseUrl = config.baseUrl || 'https://api.siliconflow.cn';
+                var model = 'Qwen/Qwen2.5-VL-7B-Instruct';
+                url = baseUrl + '/v1/chat/completions';
+                headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config.apiKey };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'user', content: [
+                        { type: 'image_url', image_url: { url: base64Data } },
+                        { type: 'text', text: prompt }
+                    ]}],
+                    max_tokens: 100, temperature: 0.1
+                });
+            } else if (provider === 'openai') {
+                var baseUrl = config.baseUrl || 'https://api.openai.com';
+                var model = config.model || 'gpt-4o-mini';
+                url = baseUrl + '/v1/chat/completions';
+                headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config.apiKey };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'user', content: [
+                        { type: 'image_url', image_url: { url: base64Data, detail: 'low' } },
+                        { type: 'text', text: prompt }
+                    ]}],
+                    max_tokens: 100
+                });
+            } else if (provider === 'anthropic') {
+                var baseUrl = config.baseUrl || 'https://api.anthropic.com';
+                var model = config.model || 'claude-sonnet-4-20250514';
+                url = baseUrl + '/v1/messages';
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-api-key': config.apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true'
+                };
+                body = JSON.stringify({
+                    model: model, max_tokens: 100,
+                    messages: [{ role: 'user', content: [
+                        { type: 'image', source: { type: 'base64', media_type: mimeType, data: b64str } },
+                        { type: 'text', text: prompt }
+                    ]}]
+                });
+            } else if (provider === 'google') {
+                var baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com';
+                var model = config.model || 'gemini-2.0-flash';
+                url = baseUrl + '/v1beta/models/' + model + ':generateContent?key=' + config.apiKey;
+                headers = { 'Content-Type': 'application/json' };
+                body = JSON.stringify({
+                    contents: [{ parts: [
+                        { inline_data: { mime_type: mimeType, data: b64str } },
+                        { text: prompt }
+                    ]}],
+                    generationConfig: { maxOutputTokens: 100, temperature: 0.1 }
+                });
+            } else {
+                throw new Error('不支持的提供商');
+            }
+
+            var response = await fetch(url, { method: 'POST', headers: headers, body: body });
+            if (!response.ok) throw new Error('AI API错误(' + response.status + ')');
+
+            var data = await response.json();
+            var content = '';
+            if (provider === 'siliconflow' || provider === 'openai') {
+                content = data.choices[0].message.content;
+            } else if (provider === 'anthropic') {
+                content = data.content[0].text;
+            } else if (provider === 'google') {
+                content = data.candidates[0].content.parts[0].text;
+            }
+
+            console.log('[AI识别] 返回:', content);
+
+            if (!content || content.trim() === '无' || content.includes('无法') || content.includes('看不') || content.includes('不清楚')) {
+                return [];
+            }
+
+            var names = content.split(/[\n\r,，、;；\|]/)
+                .map(function(s) { return s.replace(/^[\d\.\-\*\#\s·•]+/, '').replace(/[。.!！？?]+$/, '').trim(); })
+                .filter(function(s) {
+                    return s.length >= 2 && s.length <= 20 && !/^(无|没有|未|不|图片|照片|这是|该|包装)/.test(s);
+                });
+
+            return names.slice(0, 5);
+        }
+
+        // 常见厂商/品牌前缀（OCR文字中药品名前面可能带这些）
+        const BRAND_PREFIXES = [
+            '同仁堂', '北京同仁堂', '云南白药', '片仔癀', '东阿', '太极',
+            '修正', '仁和', '葵花', '哈药', '三九', '999', '江中',
+            '以岭', '步长', '天士力', '白云山', '广药', '康恩贝',
+            '汤臣倍健', '国药', '华润', '中美', '拜耳', '辉瑞',
+            '中华', '南京', '广州', '上海', '杭州', '天津', '吉林',
+            '河南', '山东', '四川', '贵州', '昆明', '长春'
+        ];
+
+        // 剂型后缀
+        const DOSAGE_SUFFIXES = [
+            '缓释胶囊', '肠溶胶囊', '肠溶片', '缓释片', '分散片', '咀嚼片',
+            '泡腾片', '含片', '舌下片', '控释片', '薄膜衣片',
+            '口服液', '合剂', '口服溶液', '混悬液', '糖浆', '颗粒',
+            '胶囊', '软胶囊', '滴丸', '注射液', '滴眼液', '喷雾剂',
+            '气雾剂', '贴膏', '软膏', '乳膏', '凝胶', '搽剂', '酊剂',
+            '丸', '片', '散', '膏', '丹', '露', '茶', '酒'
+        ];
+
+        // 模糊匹配单个药名（用于 AI 结果匹配和高级搜索）
+        function fuzzyMatchDrug(inputName) {
+            if (!inputName || inputName.length < 2) return null;
+
+            // 去掉前缀和后缀
+            var cleaned = inputName;
+            for (var p = 0; p < BRAND_PREFIXES.length; p++) {
+                if (cleaned.startsWith(BRAND_PREFIXES[p])) {
+                    cleaned = cleaned.substring(BRAND_PREFIXES[p].length);
+                    break;
+                }
+            }
+            for (var s = 0; s < DOSAGE_SUFFIXES.length; s++) {
+                if (cleaned.endsWith(DOSAGE_SUFFIXES[s])) {
+                    cleaned = cleaned.substring(0, cleaned.length - DOSAGE_SUFFIXES[s].length);
+                    break;
+                }
+            }
+
+            if (cleaned.length < 2) cleaned = inputName;
+
+            // 在所有药名中找最佳匹配
+            var bestMatch = null;
+            var bestScore = 0;
+
+            for (var [generic, brands] of Object.entries(drugDatabase.aliases)) {
+                var candidates = [generic].concat(brands);
+                for (var c = 0; c < candidates.length; c++) {
+                    var candidate = candidates[c];
+                    // 包含关系
+                    if (cleaned.includes(candidate) || candidate.includes(cleaned)) {
+                        var score = Math.min(cleaned.length, candidate.length) / Math.max(cleaned.length, candidate.length);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = generic;
+                        }
+                    }
+                    // 编辑距离（仅对短名称）
+                    if (cleaned.length <= 6 && candidate.length <= 6) {
+                        var dist = editDistance(cleaned, candidate);
+                        var maxLen = Math.max(cleaned.length, candidate.length);
+                        var similarity = 1 - dist / maxLen;
+                        if (similarity > 0.6 && similarity > bestScore) {
+                            bestScore = similarity;
+                            bestMatch = generic;
+                        }
+                    }
+                }
+            }
+
+            return bestScore >= 0.5 ? bestMatch : null;
+        }
+
+        // 编辑距离算法
+        function editDistance(a, b) {
+            var m = a.length, n = b.length;
+            var dp = Array(m + 1).fill(null).map(function() { return Array(n + 1).fill(0); });
+            for (var i = 0; i <= m; i++) dp[i][0] = i;
+            for (var j = 0; j <= n; j++) dp[0][j] = j;
+            for (var i = 1; i <= m; i++) {
+                for (var j = 1; j <= n; j++) {
+                    dp[i][j] = Math.min(
+                        dp[i-1][j] + 1,
+                        dp[i][j-1] + 1,
+                        dp[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)
+                    );
+                }
+            }
+            return dp[m][n];
+        }
+
+        function matchDrugsFromText(text) {
+            const found = [];
+            const allNames = [];
+
+            // 建立别名 -> 通用名的映射
+            const aliasToGeneric = {};
+            for (const [generic, brands] of Object.entries(drugDatabase.aliases)) {
+                aliasToGeneric[generic] = generic;
+                allNames.push(generic);
+                brands.forEach(function(b) {
+                    aliasToGeneric[b] = generic;
+                    allNames.push(b);
+                });
+            }
+
+            // 按名称长度降序，优先匹配更长的名称
+            allNames.sort(function(a, b) { return b.length - a.length; });
+
+            // OCR 文字多种预处理版本
+            var textClean = text.replace(/[\s\u3000\u200b\u200c\u200d\ufeff]/g, '');
+            var textPure = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+            // 额外：去掉所有常见厂商前缀后的文字
+            var textNoBrand = textPure;
+            for (var p = 0; p < BRAND_PREFIXES.length; p++) {
+                textNoBrand = textNoBrand.split(BRAND_PREFIXES[p]).join('');
+            }
+
+            console.log('[OCR匹配] 原始文字:', text.substring(0, 300));
+            console.log('[OCR匹配] 纯净文字:', textPure.substring(0, 300));
+
+            var matchedGenerics = new Set();
+
+            // === 第一轮：精确子串匹配 ===
+            for (var i = 0; i < allNames.length; i++) {
+                var name = allNames[i];
+                if (name.length < 2) continue;
+                var generic = aliasToGeneric[name];
+                if (matchedGenerics.has(generic)) continue;
+
+                if (text.includes(name) || textClean.includes(name) || textPure.includes(name)) {
+                    found.push(generic);
+                    matchedGenerics.add(generic);
+                    console.log('[OCR匹配] 精确命中:', name, '-> 通用名:', generic);
+                }
+            }
+
+            // === 第二轮：去掉剂型后缀的核心名匹配 ===
+            if (found.length === 0) {
+                console.log('[OCR匹配] 尝试核心名匹配...');
+                for (var j = 0; j < allNames.length; j++) {
+                    var drugName = allNames[j];
+                    if (drugName.length < 3) continue;
+                    var gen = aliasToGeneric[drugName];
+                    if (matchedGenerics.has(gen)) continue;
+
+                    var core = drugName;
+                    for (var s = 0; s < DOSAGE_SUFFIXES.length; s++) {
+                        if (core.endsWith(DOSAGE_SUFFIXES[s])) {
+                            core = core.substring(0, core.length - DOSAGE_SUFFIXES[s].length);
+                            break;
+                        }
+                    }
+
+                    if (core.length >= 2 && (textClean.includes(core) || textPure.includes(core) || textNoBrand.includes(core))) {
+                        found.push(gen);
+                        matchedGenerics.add(gen);
+                        console.log('[OCR匹配] 核心名命中:', core, '-> 通用名:', gen);
+                    }
+
+                    if (found.length >= 5) break;
+                }
+            }
+
+            // === 第三轮：逐行分析 + 编辑距离模糊匹配 ===
+            if (found.length === 0) {
+                console.log('[OCR匹配] 尝试逐行模糊匹配...');
+                var lines = text.split(/[\n\r]+/);
+                for (var li = 0; li < lines.length; li++) {
+                    var line = lines[li].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+                    if (line.length < 2 || line.length > 30) continue;
+
+                    // 去掉厂商前缀
+                    var lineClean = line;
+                    for (var p2 = 0; p2 < BRAND_PREFIXES.length; p2++) {
+                        if (lineClean.startsWith(BRAND_PREFIXES[p2])) {
+                            lineClean = lineClean.substring(BRAND_PREFIXES[p2].length);
+                            break;
+                        }
+                    }
+
+                    // 对这行文字尝试模糊匹配
+                    var fuzzyResult = fuzzyMatchDrug(lineClean);
+                    if (fuzzyResult && !matchedGenerics.has(fuzzyResult)) {
+                        found.push(fuzzyResult);
+                        matchedGenerics.add(fuzzyResult);
+                        console.log('[OCR匹配] 模糊命中:', lineClean, '-> 通用名:', fuzzyResult);
+                    }
+
+                    if (found.length >= 5) break;
+                }
+            }
+
+            // === 第四轮：在整段文字中滑动窗口查找药名 ===
+            if (found.length === 0) {
+                console.log('[OCR匹配] 尝试滑动窗口匹配...');
+                var pureText = textPure;
+                for (var winSize = 7; winSize >= 2; winSize--) {
+                    for (var pos = 0; pos <= pureText.length - winSize; pos++) {
+                        var window = pureText.substring(pos, pos + winSize);
+                        // 检查这个窗口是否匹配某个药名
+                        for (var k = 0; k < allNames.length; k++) {
+                            var drugN = allNames[k];
+                            var genN = aliasToGeneric[drugN];
+                            if (matchedGenerics.has(genN)) continue;
+                            if (drugN.length < 2) continue;
+
+                            // 窗口包含药名或药名包含窗口（且相似度高）
+                            if (window === drugN || (window.length >= 3 && drugN.includes(window) && window.length >= drugN.length - 1)) {
+                                found.push(genN);
+                                matchedGenerics.add(genN);
+                                console.log('[OCR匹配] 窗口命中:', window, '-> 药品:', drugN, '-> 通用名:', genN);
+                                break;
+                            }
+                        }
+                        if (found.length >= 5) break;
+                    }
+                    if (found.length > 0) break;
+                }
+            }
+
+            console.log('[OCR匹配] 最终结果:', found);
+            return found.slice(0, 5);
+        }
+
+        function showLoading(text) {
+            document.getElementById('loadingText').textContent = text || '处理中...';
+            document.getElementById('loading').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(45,45,45,0.88);color:white;padding:14px 28px;border-radius:24px;font-size:14px;z-index:9999;letter-spacing:0.5px;font-weight:300;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 2000);
+        }
+
+        document.getElementById('drugInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addDrug();
+            }
+        });
+
+        // ============ AI 深度验证模块 ============
+
+        function getAiConfig() {
+            const saved = localStorage.getItem('drugChecker_aiConfig');
+            if (saved) return JSON.parse(saved);
+            return { provider: 'siliconflow', apiKey: '', model: '', baseUrl: '' };
+        }
+
+        function saveAiConfig(config) {
+            localStorage.setItem('drugChecker_aiConfig', JSON.stringify(config));
+        }
+
+        function showConfigModal() {
+            const config = getAiConfig();
+            document.getElementById('configModal').style.display = 'flex';
+            document.getElementById('cfgProvider').value = config.provider || 'openai';
+            document.getElementById('cfgApiKey').value = config.apiKey || '';
+            document.getElementById('cfgModel').value = config.model || '';
+            document.getElementById('cfgBaseUrl').value = config.baseUrl || '';
+            updateModelPlaceholder();
+        }
+
+        function hideConfigModal() {
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        function updateModelPlaceholder() {
+            const provider = document.getElementById('cfgProvider').value;
+            const modelInput = document.getElementById('cfgModel');
+            const urlInput = document.getElementById('cfgBaseUrl');
+            // 切换提供商时清空自定义值，避免残留错误地址
+            modelInput.value = '';
+            urlInput.value = '';
+            if (provider === 'siliconflow') {
+                modelInput.placeholder = 'Qwen/Qwen2.5-72B-Instruct（免费快速）';
+                urlInput.placeholder = 'https://api.siliconflow.cn（默认，无需修改）';
+            } else if (provider === 'openai') {
+                modelInput.placeholder = 'gpt-4o（默认）';
+                urlInput.placeholder = 'https://api.openai.com（默认）';
+            } else if (provider === 'anthropic') {
+                modelInput.placeholder = 'claude-sonnet-4-20250514（默认）';
+                urlInput.placeholder = 'https://api.anthropic.com（默认）';
+            } else if (provider === 'google') {
+                modelInput.placeholder = 'gemini-2.0-flash（默认）';
+                urlInput.placeholder = 'https://generativelanguage.googleapis.com（默认）';
+            }
+        }
+
+        function saveConfigAndClose() {
+            const config = {
+                provider: document.getElementById('cfgProvider').value,
+                apiKey: document.getElementById('cfgApiKey').value.trim(),
+                model: document.getElementById('cfgModel').value.trim(),
+                baseUrl: document.getElementById('cfgBaseUrl').value.trim()
+            };
+            if (!config.apiKey) {
+                showToast('请输入 API Key');
+                return;
+            }
+            saveAiConfig(config);
+            hideConfigModal();
+            showToast('配置已保存');
+        }
+
+        function buildSystemPrompt() {
+            return `你是一个"药物相互作用安全查询引擎"，专门用于回答与"两种或多种药物合用时的安全性"相关的问题。
+
+核心规则：
+1. 仅回答与"药物相互作用"直接相关的安全性问题。
+2. 所有结论必须基于具有高可信度的医学/药学循证来源。
+3. 严格使用 X/A/B/C/D 五级分级系统描述相互作用等级。
+4. 对不确定或高风险的结论，必须明确标注"升级建议"，引导患者咨询专业人士。
+
+分级标准：
+- X级（禁忌合用）：合用可导致严重不良后果，临床几乎无例外禁止。
+- A级（无已知相互作用）：现有循证证据未发现具有临床意义的相互作用。
+- B级（无需调整）：有轻度理论风险，但临床实践通常无需特殊处理。
+- C级（需监测）：合用有中度风险，可能需监测症状/指标、调整剂量或给药时间。
+- D级（需调整方案）：合用有较高风险，通常需调整剂量、更换药物或密切医学监护。
+
+输出格式要求（JSON）：
+{
+  "grade": "X/A/B/C/D",
+  "drug_pair": ["药物A", "药物B"],
+  "mechanism": "相互作用机制简述",
+  "clinical_effect": "临床影响/不良后果",
+  "management": "处理建议",
+  "evidence_level": "证据等级（高/中/低）",
+  "sources": ["来源1", "来源2"],
+  "escalation": "是否建议升级咨询（是/否+原因）"
+}
+
+如有多对药物，请逐对输出JSON数组。
+
+禁止行为：
+- 不回答超出药物相互作用范围的问题
+- 不编造证据来源
+- 不给出模糊或无分级的结论
+
+重要：你必须且只能输出JSON格式的结果，不要输出任何解释性文字。如果有多对药物组合，输出JSON数组。直接以 [ 或 { 开头输出。`;
+        }
+
+        function buildUserPrompt(drugs, localResults) {
+            let prompt = `请对以下药物组合进行深度相互作用安全性分析：\n\n药物列表：${drugs.join('、')}\n\n`;
+            if (localResults && localResults.length > 0) {
+                prompt += '本地数据库已检出以下相互作用（请验证其准确性并补充遗漏）：\n';
+                localResults.forEach(function(r) {
+                    prompt += `- ${r.drug1} + ${r.drug2}：${r.severity}，${r.description}\n`;
+                });
+            } else {
+                prompt += '本地数据库未检出已知相互作用，请分析是否存在潜在风险。\n';
+            }
+            prompt += '\n请严格按照JSON格式输出分析结果。如有多对组合，输出JSON数组。';
+            return prompt;
+        }
+
+        async function callLLM(systemPrompt, userPrompt) {
+            const config = getAiConfig();
+            if (!config.apiKey) {
+                throw new Error('请先配置 AI 模型的 API Key');
+            }
+
+            const provider = config.provider;
+            let url, headers, body;
+
+            if (provider === 'siliconflow') {
+                const baseUrl = config.baseUrl || 'https://api.siliconflow.cn';
+                const model = config.model || 'Qwen/Qwen2.5-72B-Instruct';
+                url = `${baseUrl}/v1/chat/completions`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.apiKey}`
+                };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    temperature: 0.1,
+                    max_tokens: 4096
+                });
+            } else if (provider === 'openai') {
+                const baseUrl = config.baseUrl || 'https://api.openai.com';
+                const model = config.model || 'gpt-4o';
+                url = `${baseUrl}/v1/chat/completions`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.apiKey}`
+                };
+                body = JSON.stringify({
+                    model: model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    temperature: 0.1
+                });
+            } else if (provider === 'anthropic') {
+                const baseUrl = config.baseUrl || 'https://api.anthropic.com';
+                const model = config.model || 'claude-sonnet-4-20250514';
+                url = `${baseUrl}/v1/messages`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-api-key': config.apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true'
+                };
+                body = JSON.stringify({
+                    model: model,
+                    max_tokens: 4096,
+                    system: systemPrompt,
+                    messages: [
+                        { role: 'user', content: userPrompt }
+                    ]
+                });
+            } else if (provider === 'google') {
+                const baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com';
+                const model = config.model || 'gemini-2.0-flash';
+                url = `${baseUrl}/v1beta/models/${model}:generateContent?key=${config.apiKey}`;
+                headers = { 'Content-Type': 'application/json' };
+                body = JSON.stringify({
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    generationConfig: { temperature: 0.1 }
+                });
+            }
+
+            const response = await fetch(url, { method: 'POST', headers: headers, body: body });
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`API 请求失败 (${response.status}): ${errText.substring(0, 200)}`);
+            }
+
+            const data = await response.json();
+            let content = '';
+            if (provider === 'siliconflow' || provider === 'openai') {
+                content = data.choices[0].message.content;
+            } else if (provider === 'anthropic') {
+                content = data.content[0].text;
+            } else if (provider === 'google') {
+                content = data.candidates[0].content.parts[0].text;
+            }
+            return content;
+        }
+
+        function parseAiResponse(text) {
+            if (!text || text.trim().length === 0) return null;
+
+            // 多种方式尝试提取 JSON
+            let jsonStr = '';
+
+            // 方式1: ```json ... ```
+            const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+            if (codeBlockMatch) jsonStr = codeBlockMatch[1].trim();
+
+            // 方式2: 直接找数组
+            if (!jsonStr) {
+                const arrMatch = text.match(/(\[\s*\{[\s\S]*\}\s*\])/);
+                if (arrMatch) jsonStr = arrMatch[1];
+            }
+
+            // 方式3: 找单个对象
+            if (!jsonStr) {
+                const objMatch = text.match(/(\{[\s\S]*?"grade"[\s\S]*?\})/);
+                if (objMatch) jsonStr = objMatch[1];
+            }
+
+            // 方式4: 找所有 JSON 对象
+            if (!jsonStr) {
+                const allObjs = text.match(/\{[^{}]*"grade"[^{}]*\}/g);
+                if (allObjs && allObjs.length > 0) {
+                    jsonStr = '[' + allObjs.join(',') + ']';
+                }
+            }
+
+            if (!jsonStr) {
+                // 方式5: 如果完全无法解析JSON，尝试从文本中提取关键信息
+                const gradeMatch = text.match(/([XABCD])级/);
+                if (gradeMatch) {
+                    return [{
+                        grade: gradeMatch[1],
+                        drug_pair: [],
+                        mechanism: text.substring(0, 200),
+                        clinical_effect: '',
+                        management: '',
+                        evidence_level: '',
+                        sources: [],
+                        escalation: ''
+                    }];
+                }
+                return null;
+            }
+
+            try {
+                const parsed = JSON.parse(jsonStr);
+                return Array.isArray(parsed) ? parsed : [parsed];
+            } catch(e) {
+                // JSON修复：尝试去掉尾部多余逗号
+                try {
+                    const fixed = jsonStr.replace(/,\s*([\]\}])/g, '$1');
+                    const parsed2 = JSON.parse(fixed);
+                    return Array.isArray(parsed2) ? parsed2 : [parsed2];
+                } catch(e2) {
+                    return null;
+                }
+            }
+        }
+
+        // 静默 AI 验证：后台调用，结果融合到现有卡片
+        async function silentAiVerify(localResults) {
+            const config = getAiConfig();
+            if (!config.apiKey) return; // 未配置则静默跳过
+
+            try {
+                const drugs = drugList.map(function(d){ return d.original; });
+                const localForPrompt = localResults.map(function(r) {
+                    return {
+                        drug1: r.drug1Name,
+                        drug2: r.drug2Name,
+                        severity: r.level,
+                        description: r.description
+                    };
+                });
+
+                const systemPrompt = buildSystemPrompt();
+                const userPrompt = buildUserPrompt(drugs, localForPrompt);
+                const responseText = await callLLM(systemPrompt, userPrompt);
+                const parsed = parseAiResponse(responseText);
+
+                if (parsed && parsed.length > 0) {
+                    mergeAiIntoResults(parsed, localResults);
+                }
+            } catch(e) {
+                console.warn('AI silent verify failed:', e);
+                // 静默失败，不打扰用户
+            }
+        }
+
+        // 将 AI 结果融合到已显示的结果卡片中
+        function mergeAiIntoResults(aiResults, localResults) {
+            const section = document.getElementById('resultSection');
+            const resultItems = section.querySelectorAll('.result-item');
+
+            aiResults.forEach(function(aiItem) {
+                const grade = (aiItem.grade || '').toUpperCase();
+                const drugPair = aiItem.drug_pair || [];
+
+                // 找到对应的本地结果卡片
+                let matchedCard = null;
+                let matchedLocalResult = null;
+                resultItems.forEach(function(card, idx) {
+                    const drugsDiv = card.querySelector('.result-drugs');
+                    if (drugsDiv) {
+                        const cardText = drugsDiv.textContent;
+                        // 匹配药品对
+                        if (drugPair.length >= 2) {
+                            if (cardText.indexOf(drugPair[0]) !== -1 && cardText.indexOf(drugPair[1]) !== -1) {
+                                matchedCard = card;
+                                matchedLocalResult = localResults[idx];
+                            }
+                        }
+                    }
+                });
+
+                // 如果AI发现了本地未收录的严重风险（info级别被升级为warning/danger）
+                if (matchedCard && matchedLocalResult) {
+                    // 对 info 级别的组合，如果 AI 发现有风险，补充信息
+                    if (matchedLocalResult.level === 'info' && (grade === 'C' || grade === 'D' || grade === 'X')) {
+                        // 升级风险：补充 AI 发现的信息
+                        const supplementHtml = buildSupplementHtml(aiItem);
+                        matchedCard.insertAdjacentHTML('beforeend', supplementHtml);
+                        // 升级视觉样式
+                        if (grade === 'X' || grade === 'D') {
+                            matchedCard.className = 'result-item warning';
+                            const levelDiv = matchedCard.querySelector('.result-level');
+                            if (levelDiv) levelDiv.textContent = '需要注意';
+                        }
+                    }
+                    // 对已有结果，补充更详细的机制说明
+                    else if (matchedLocalResult.level !== 'info' && aiItem.mechanism) {
+                        const detailHtml = '<div class="ai-supplement" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e8e6e3;font-size:12px;color:#666;line-height:1.8;"><span style="color:#4a6cf7;font-weight:500;">作用机制：</span>' + aiItem.mechanism + '</div>';
+                        matchedCard.insertAdjacentHTML('beforeend', detailHtml);
+                    }
+                }
+
+                // 如果AI发现了本地完全没有的组合风险
+                if (!matchedCard && (grade === 'C' || grade === 'D' || grade === 'X') && drugPair.length >= 2) {
+                    const newCardHtml = buildNewRiskCard(aiItem);
+                    section.insertAdjacentHTML('beforeend', newCardHtml);
+                }
+            });
+        }
+
+        function buildSupplementHtml(aiItem) {
+            let html = '<div class="ai-supplement" style="margin-top:12px;padding:12px;background:#fff9f0;border-radius:8px;border-left:3px solid #fd7e14;font-size:12px;line-height:1.8;">';
+            html += '<div style="color:#c0564b;font-weight:500;margin-bottom:4px;">医学数据库补充信息</div>';
+            if (aiItem.mechanism) html += '<div><strong>作用机制：</strong>' + aiItem.mechanism + '</div>';
+            if (aiItem.clinical_effect) html += '<div><strong>可能影响：</strong>' + aiItem.clinical_effect + '</div>';
+            if (aiItem.management) html += '<div style="margin-top:4px;color:#333;"><strong>建议：</strong>' + aiItem.management + '</div>';
+            html += '</div>';
+            return html;
+        }
+
+        function buildNewRiskCard(aiItem) {
+            const grade = (aiItem.grade || '').toUpperCase();
+            const levelClass = (grade === 'X' || grade === 'D') ? 'danger' : 'warning';
+            const levelLabel = (grade === 'X' || grade === 'D') ? '严重冲突' : '需要注意';
+            const pair = aiItem.drug_pair || [];
+            
+            let html = '<div class="result-item ' + levelClass + '" style="animation:slideUp 0.4s ease;">';
+            html += '<div class="result-level">' + levelLabel + '</div>';
+            html += '<div class="result-drugs">' + pair.join(' + ') + '</div>';
+            html += '<div class="result-desc">' + (aiItem.clinical_effect || aiItem.mechanism || '存在潜在相互作用风险') + '</div>';
+            html += '<div class="result-advice"><strong>服用建议：</strong>' + (aiItem.management || '建议咨询医生或药师') + '</div>';
+            if (aiItem.sources && aiItem.sources.length > 0) {
+                html += '<div class="result-source" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e8e6e3;font-size:11px;color:#999;line-height:1.6;"><span style="color:#c0564b;font-weight:500;">数据来源：</span>' + aiItem.sources.join('；') + '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+
+    </script>
+
+    <!-- AI 配置弹窗 -->
+    <div class="config-modal" id="configModal" style="display:none;" onclick="if(event.target===this)hideConfigModal()">
+        <div class="config-box">
+            <div class="config-title">AI 模型配置</div>
+            <div class="config-field">
+                <label>模型提供商</label>
+                <select id="cfgProvider" onchange="updateModelPlaceholder()">
+                    <option value="siliconflow">硅基流动 SiliconFlow（国内免费推荐）</option>
+                    <option value="openai">OpenAI (GPT)</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                    <option value="google">Google (Gemini)</option>
+                </select>
+            </div>
+            <div class="config-field">
+                <label>API Key</label>
+                <input type="password" id="cfgApiKey" placeholder="输入你的 API Key">
+            </div>
+            <div class="config-field">
+                <label>模型名称（可选）</label>
+                <input type="text" id="cfgModel" placeholder="留空使用默认模型">
+            </div>
+            <div class="config-field">
+                <label>自定义 Base URL（可选）</label>
+                <input type="text" id="cfgBaseUrl" placeholder="留空使用官方地址">
+            </div>
+            <div class="config-actions">
+                <button class="config-btn config-btn-cancel" onclick="hideConfigModal()">取消</button>
+                <button class="config-btn config-btn-save" onclick="saveConfigAndClose()">保存</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
